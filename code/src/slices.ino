@@ -169,6 +169,9 @@ void setup() {
     #if ENABLE_DRIVER_GAME_OF_LIFE
     gameOfLifeSetup();
     #endif
+    #if ENABLE_DRIVER_CANVAS
+    canvasSetup();
+    #endif
 
     driverSetup();
 

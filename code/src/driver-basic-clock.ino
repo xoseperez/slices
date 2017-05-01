@@ -47,7 +47,7 @@ void basicClockLoop() {
 
 void basicClockSetup() {
     driverRegister(
-        "Basic clock",
+        "basic-clock",
         []{
             basicClockPrevious = 99;
             basicClockLoop();

@@ -50,6 +50,15 @@ void driverStop() {
     if (_drivers[_currentDriver].stopFn) (_drivers[_currentDriver].stopFn)();
 }
 
+int driverFind(const char * name) {
+    for (unsigned char i=0; i<_drivers.size(); i++) {
+        if (strcmp(_drivers[i].name, name) == 0) {
+            return i;
+        }
+    }
+    return -1;
+}
+
 void driverSet(unsigned char i) {
     if (i <= _drivers.size() - 1) {
         driverStop();

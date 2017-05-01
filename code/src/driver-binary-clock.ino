@@ -72,5 +72,5 @@ void binaryClockLoop() {
 }
 
 void binaryClockSetup() {
-    driverRegister("Binary clock", NULL, binaryClockLoop, NULL);
+    driverRegister("binary-clock", NULL, binaryClockLoop, NULL);
 }

@@ -168,7 +168,7 @@ void fibonacciClockSetup() {
     fibonacci_colors[3] = MATRIX_BLUE;
 
     driverRegister(
-        "Fibonacci clock",
+        "fibonacci-clock",
         []{
             fibonacciPreviousMinute = 99;
             fibonacciClockLoop();

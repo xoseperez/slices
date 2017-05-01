@@ -71,6 +71,9 @@
 .button-settings-restore {
     background: rgb(0, 202, 0);
 }
+.button-clear-canvas {
+    background: rgb(202, 60, 60);
+}
 .pure-g {
     margin-bottom: 20px;
 }
@@ -129,4 +132,8 @@ input[name=upgrade] {
     left: 50%;
     margin-top: -50px;
     margin-left: -200px;
+}
+
+.center {
+    text-align: center;
 }

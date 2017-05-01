@@ -217,5 +217,5 @@ void wordClockStart() {
 }
 
 void wordClockSetup() {
-    driverRegister("Word clock", wordClockStart, NULL, NULL);
+    driverRegister("word-clock", wordClockStart, NULL, NULL);
 }

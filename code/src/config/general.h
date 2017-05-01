@@ -16,6 +16,9 @@
     #undef ENABLE_DRIVER_GAME_OF_LIFE
     #define ENABLE_DRIVER_GAME_OF_LIFE  0
 
+    #undef ENABLE_DRIVER_CANVAS
+    #define ENABLE_DRIVER_CANVAS        0
+
 #endif
 
 #ifndef ENABLE_DRIVER_FIBONACCI
@@ -38,6 +41,9 @@
 #define ENABLE_DRIVER_GAME_OF_LIFE      1
 #endif
 
+#ifndef ENABLE_DRIVER_CANVAS
+#define ENABLE_DRIVER_CANVAS            1
+#endif
 
 
 //------------------------------------------------------------------------------

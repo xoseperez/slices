@@ -112,6 +112,21 @@ void _wsParse(uint32_t client_id, uint8_t * payload, size_t length) {
 
         }
 
+        if (action.equals("driver") && root.containsKey("data")) {
+            JsonObject& data = root["data"];
+            if (data.containsKey("name")) {
+                int id = driverFind(data["name"]);
+                if (id>=0) driverSet(id);
+            }
+        }
+
+        if (action.equals("color") && root.containsKey("data")) {
+            JsonObject& data = root["data"];
+            unsigned char x = data["x"].as<int>();
+            unsigned char y = data["y"].as<int>();
+            canvasDraw(x, y, data["color"]);
+        }
+
     };
 
     // Check config
@@ -301,6 +316,9 @@ void _wsStart(uint32_t client_id) {
         root["mqttPassword"] = getSetting("mqttPassword");
         root["mqttTopic"] = getSetting("mqttTopic", MQTT_TOPIC);
         #endif
+
+        root["matrixWidth"] = MATRIX_WIDTH;
+        root["matrixHeight"] = MATRIX_HEIGHT;
 
         root["webPort"] = getSetting("webPort", WEBSERVER_PORT).toInt();
 

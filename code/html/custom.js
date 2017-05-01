@@ -4,6 +4,11 @@ var maxNetworks;
 var host;
 var port;
 
+var matrixWidth = 8;
+var matrixHeight = 8;
+var matrixStep;
+var drawingColor = "#ffffff";
+
 // http://www.the-art-of-web.com/javascript/validate-password/
 function checkPassword(str) {
     // at least one number, one lowercase and one uppercase letter
@@ -163,6 +168,59 @@ function restoreSettings() {
     return false;
 }
 
+function setPixel(x, y, color) {
+
+    // draw square
+    var context = $('#matrix').get(0).getContext("2d");
+    context.fillStyle = color;
+    context.fillRect(
+        x * matrixStep + 1,
+        y * matrixStep + 1,
+        matrixStep - 1,
+        matrixStep - 1);
+
+}
+
+function clearCanvas() {
+    var empty = "#000000";
+    for (x=0; x<matrixWidth; x++) {
+        for (y=0; y<matrixHeight; y++) {
+            setPixel(x, y, empty);
+        }
+    }
+}
+
+function doCanvas() {
+    clearCanvas();
+    websock.send(JSON.stringify({'action': 'driver', 'data' : {'name': 'canvas'}}));
+}
+
+function updateCanvas() {
+
+    var width = 512;
+    var height = width;
+    matrixStep = width / matrixWidth;
+
+    var canvas = $('#matrix')
+        .attr({width: width + 10, height: height + 10})
+        .on('mousedown', function(e) {
+
+            // get coordinates
+            var x = parseInt(e.offsetX / matrixStep);
+            var y = parseInt(e.offsetY / matrixStep);
+
+            // draw square
+            setPixel(x, y, drawingColor);
+
+            // send value
+            websock.send(JSON.stringify({'action': 'color', 'data' : { 'x': x, 'y': y, 'color': drawingColor}}));
+
+        });
+
+    clearCanvas();
+
+}
+
 function showPanel() {
     $(".panel").hide();
     $("#" + $(this).attr("data")).show();
@@ -269,6 +327,15 @@ function processData(data) {
             return;
         }
 
+        if (key == "matrixWidth") {
+            matrixWidth = parseInt(data.matrixWidth);
+            return;
+        }
+        if (key == "matrixHeight") {
+            matrixHeight = parseInt(data.matrixHeight);
+            return;
+        }
+
         // Wifi
         if (key == "wifi") {
 
@@ -340,6 +407,8 @@ function processData(data) {
         doGenerateAPIKey();
     }
 
+    updateCanvas();
+
 }
 
 function getJson(str) {
@@ -389,6 +458,7 @@ function init() {
     $(".button-settings-restore").on('click', restoreSettings);
     $('#uploader').on('change', onFileUpload);
     $(".button-upgrade").on('click', doUpgrade);
+    $(".button-clear-canvas").on('click', doCanvas);
     $(".button-upgrade-browse").on('click', function() {
         $("input[name='upgrade']")[0].click();
         return false;
@@ -401,6 +471,11 @@ function init() {
     $(".pure-menu-link").on('click', showPanel);
     $(".button-add-network").on('click', function() {
         $("div.more", addNetwork()).toggle();
+    });
+    $('input[name="color"]').wheelColorPicker({
+        sliders: 'wsvp'
+    }).on('sliderup', function() {
+        drawingColor = $(this).wheelColorPicker('getValue', 'css');
     });
 
     var host = window.location.hostname;

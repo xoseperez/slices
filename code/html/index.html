@@ -11,6 +11,7 @@
         <link rel="stylesheet" href="pure-min.css" />
         <link rel="stylesheet" href="side-menu.css" />
         <link rel="stylesheet" href="grids-responsive-min.css" />
+        <link rel="stylesheet" href="wheelcolorpicker.css" />
         <link rel="stylesheet" href="custom.css" />
         <!-- endbuild -->
 
@@ -94,6 +95,10 @@
 
                         <li class="pure-menu-item">
                             <a href="#" class="pure-menu-link" data="panel-admin">ADMIN</a>
+                        </li>
+
+                        <li class="pure-menu-item">
+                            <a href="#" class="pure-menu-link" data="panel-canvas">CANVAS</a>
                         </li>
 
                     </ul>
@@ -301,6 +306,24 @@
 
                     </div>
 
+                    <div class="panel" id="panel-canvas">
+
+                        <div class="header">
+                            <h1>DRAWING CANVAS</h1>
+                            <h2>Choose the color and click on the grid, watch it light in your "slices"</h2>
+                        </div>
+
+                        <div class="page">
+
+                            <input class="pure-u-1 pure-u-sm-1-4 center" data-wcp-layout="block" name="color" readonly />
+                            <button type="button" class="pure-button button-clear-canvas">Clear canvas</button>
+                            <canvas id="matrix" class="center" />
+
+                        </div>
+
+                    </div>
+
+
                 </form>
 
             </div> <!-- content -->
@@ -362,6 +385,7 @@
 
     <!-- build:js script.js -->
     <script src="jquery-1.12.3.min.js"></script>
+    <script src="jquery.wheelcolorpicker-3.0.2.min.js"></script>
     <script src="custom.js"></script>
     <!-- endbuild -->
 
