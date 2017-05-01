@@ -25,8 +25,7 @@ void otaSetup() {
     ArduinoOTA.onStart([]() {
         DEBUG_MSG_P(PSTR("[OTA] Start\n"));
         wsSend("{\"message\": \"OTA update started\"}");
-        matrixClear();
-        matrixStopScroll();
+        driverStop();
     });
 
     ArduinoOTA.onEnd([]() {
@@ -38,7 +37,7 @@ void otaSetup() {
     ArduinoOTA.onProgress([](unsigned int progress, unsigned int total) {
 
         Adafruit_NeoMatrix * matrix = getMatrix();
-        unsigned long color = matrix->Color(10, 255, 10);
+        unsigned long color = MATRIX_GREEN;
         #ifdef FIBONACCI
             long num = MATRIX_WIDTH * progress / total;
             for (unsigned char x=0; x<MATRIX_WIDTH; x++) {

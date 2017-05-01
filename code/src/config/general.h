@@ -13,6 +13,9 @@
     #undef ENABLE_DRIVER_WORD
     #define ENABLE_DRIVER_WORD          0
 
+    #undef ENABLE_DRIVER_GAME_OF_LIFE
+    #define ENABLE_DRIVER_GAME_OF_LIFE  0
+
 #endif
 
 #ifndef ENABLE_DRIVER_FIBONACCI
@@ -30,6 +33,12 @@
 #ifndef ENABLE_DRIVER_WORD
 #define ENABLE_DRIVER_WORD              1
 #endif
+
+#ifndef ENABLE_DRIVER_GAME_OF_LIFE
+#define ENABLE_DRIVER_GAME_OF_LIFE      1
+#endif
+
+
 
 //------------------------------------------------------------------------------
 // GENERAL
@@ -56,8 +65,8 @@
 // To receive the message son the destination computer use nc:
 // nc -ul 8111
 
-//#define DEBUG_UDP_IP            IPAddress(192, 168, 1, 100)
-//#define DEBUG_UDP_PORT          8113
+#define DEBUG_UDP_IP            IPAddress(192, 168, 1, 100)
+#define DEBUG_UDP_PORT          8113
 
 //--------------------------------------------------------------------------------
 // EEPROM
@@ -98,7 +107,14 @@
 #endif
 
 #define MATRIX_DEFAULT_BRIGHTNESS   40
-#define MATRIX_SCROLL_INTERVAL      0.075
+#define MATRIX_SCROLL_INTERVAL      75
+
+// Basic colors
+#define MATRIX_RED                  getMatrix()->Color(255,10,10)
+#define MATRIX_GREEN                getMatrix()->Color(10,255,10)
+#define MATRIX_BLUE                 getMatrix()->Color(10,10,255)
+#define MATRIX_GREY                 getMatrix()->Color(64,64,64)
+#define MATRIX_ORANGE               getMatrix()->Color(255,255,10)
 
 //--------------------------------------------------------------------------------
 // BUTTON

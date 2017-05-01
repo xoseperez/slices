@@ -62,6 +62,11 @@ void binaryClockLoop() {
 
         matrixRefresh();
 
+        DEBUG_MSG_P("%ld\n", matrix->Color(255,0,0));
+        DEBUG_MSG_P("%ld\n", matrix->Color(0,255,0));
+        DEBUG_MSG_P("%ld\n", matrix->Color(0,0,255));
+        DEBUG_MSG_P("%ld\n", matrix->Color(0,0,0));
+
     }
 
 }

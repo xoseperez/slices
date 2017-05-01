@@ -147,12 +147,12 @@ void fibonacciClockLoop() {
 
     for (unsigned char n = 0; n < currentMinute % 5; n++) {
         #if MATRIX_SIZE == MATRIX_8x8
-            matrix->drawPixel(MATRIX_WIDTH - n - 1, MATRIX_HEIGHT - 1, fibonacci_colors[0]);
+            matrix->drawPixel(MATRIX_WIDTH - n - 1, MATRIX_HEIGHT - 1, MATRIX_ORANGE);
         #else
-            matrix->drawPixel(MATRIX_WIDTH - n*3 - 1, MATRIX_HEIGHT - 1, fibonacci_colors[0]);
-            matrix->drawPixel(MATRIX_WIDTH - n*3 - 1, MATRIX_HEIGHT - 2, fibonacci_colors[0]);
-            matrix->drawPixel(MATRIX_WIDTH - n*3 - 2, MATRIX_HEIGHT - 1, fibonacci_colors[0]);
-            matrix->drawPixel(MATRIX_WIDTH - n*3 - 2, MATRIX_HEIGHT - 2, fibonacci_colors[0]);
+            matrix->drawPixel(MATRIX_WIDTH - n*3 - 1, MATRIX_HEIGHT - 1, MATRIX_ORANGE);
+            matrix->drawPixel(MATRIX_WIDTH - n*3 - 1, MATRIX_HEIGHT - 2, MATRIX_ORANGE);
+            matrix->drawPixel(MATRIX_WIDTH - n*3 - 2, MATRIX_HEIGHT - 1, MATRIX_ORANGE);
+            matrix->drawPixel(MATRIX_WIDTH - n*3 - 2, MATRIX_HEIGHT - 2, MATRIX_ORANGE);
         #endif
     }
 
@@ -162,12 +162,10 @@ void fibonacciClockLoop() {
 
 void fibonacciClockSetup() {
 
-    Adafruit_NeoMatrix * matrix = getMatrix();
-
-    fibonacci_colors[0] = matrix->Color(64, 64, 64);
-    fibonacci_colors[1] = matrix->Color(255, 10, 10);
-    fibonacci_colors[2] = matrix->Color(10, 255, 10);
-    fibonacci_colors[3] = matrix->Color(10, 10, 255);
+    fibonacci_colors[0] = MATRIX_GREY;
+    fibonacci_colors[1] = MATRIX_RED;
+    fibonacci_colors[2] = MATRIX_GREEN;
+    fibonacci_colors[3] = MATRIX_BLUE;
 
     driverRegister(
         "Fibonacci clock",

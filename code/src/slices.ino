@@ -166,6 +166,9 @@ void setup() {
     #if ENABLE_DRIVER_BINARY
     binaryClockSetup();
     #endif
+    #if ENABLE_DRIVER_GAME_OF_LIFE
+    gameOfLifeSetup();
+    #endif
 
     driverSetup();
 

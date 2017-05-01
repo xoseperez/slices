@@ -28,7 +28,7 @@ void rtcSetup() {
         DEBUG_MSG_P(PSTR("[RTC] RTC not actively running. Starting now\n"));
         rtc.SetIsRunning(true);
     }
-rtc.SetDateTime(compiled);
+
     RtcDateTime now = rtc.GetDateTime();
     if (now < compiled) {
         DEBUG_MSG_P(PSTR("[RTC] Time is older than compile time. Updating time to compile time\n"));

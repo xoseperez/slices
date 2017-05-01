@@ -12,8 +12,6 @@ Copyright (C) 2017 by Xose Pérez <xose dot perez at gmail dot com>
 #include <Ticker.h>
 #include <ESP8266WiFi.h>
 
-//#include "fonts/FreeSansBold5pt8b.h"
-
 Adafruit_NeoMatrix * _matrix;
 Ticker scrollTicker;
 
@@ -50,12 +48,12 @@ void matrixRefresh() {
     Adafruit_NeoMatrix * matrix = getMatrix();
     if (!wifiConnected()) {
         if (WiFi.getMode() == WIFI_AP) {
-            matrix->drawPixel(0, MATRIX_HEIGHT - 1, matrix->Color(10, 10, 255));
+            matrix->drawPixel(0, MATRIX_HEIGHT - 1, MATRIX_BLUE);
         } else {
-            matrix->drawPixel(0, MATRIX_HEIGHT - 1, matrix->Color(255, 10, 10));
+            matrix->drawPixel(0, MATRIX_HEIGHT - 1, MATRIX_RED);
         }
     } else if (!ntpConnected()) {
-        matrix->drawPixel(0, MATRIX_HEIGHT - 1, matrix->Color(255, 255, 10));
+        matrix->drawPixel(0, MATRIX_HEIGHT - 1, MATRIX_ORANGE);
     }
     matrix->show();
 }
@@ -68,9 +66,7 @@ void matrixWrite(int x, int y, const char * text, unsigned long color) {
 }
 
 void matrixWrite(int x, int y, const char * text) {
-    Adafruit_NeoMatrix * matrix = getMatrix();
-    unsigned long color = matrix->Color(10, 10, 255);
-    matrixWrite(x, y, text, color);
+    matrixWrite(x, y, text, MATRIX_BLUE);
 }
 
 void matrixScroll(byte y, const char * text, bool once, blindCallback endScroll) {
@@ -82,7 +78,7 @@ void matrixScroll(byte y, const char * text, bool once, blindCallback endScroll)
     _scrollY = y;
     _scrollX = matrix->width();
     _endScroll = endScroll;
-    scrollTicker.attach(MATRIX_SCROLL_INTERVAL, matrixLoop);
+    scrollTicker.attach_ms(MATRIX_SCROLL_INTERVAL, matrixLoop);
 }
 
 void matrixScroll(const char * text) {
@@ -105,7 +101,7 @@ void matrixLoop() {
     }
 
     matrix->fillScreen(0);
-    matrixWrite(_scrollX, _scrollY, _text, matrix->Color(255, 0, 0));
+    matrixWrite(_scrollX, _scrollY, _text, MATRIX_RED);
     matrix->show();
 
 }
@@ -123,7 +119,7 @@ void matrixSetup() {
 
     _matrix->begin();
     _matrix->setTextWrap(false);
-    //_matrix->setFont(&FreeSansBold5pt8b);
+    //_matrix->setFont(&--);
     _matrix->setBrightness(MATRIX_DEFAULT_BRIGHTNESS);
 
 }
