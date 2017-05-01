@@ -300,8 +300,6 @@ void _wsStart(uint32_t client_id) {
         root["mqttUser"] = getSetting("mqttUser");
         root["mqttPassword"] = getSetting("mqttPassword");
         root["mqttTopic"] = getSetting("mqttTopic", MQTT_TOPIC);
-        #else
-        root["mqttVisible"] = false;
         #endif
 
         root["webPort"] = getSetting("webPort", WEBSERVER_PORT).toInt();

@@ -2,19 +2,34 @@
 // CONFIGURATION
 //------------------------------------------------------------------------------
 
-#ifdef FIBONACCI
-    #define ENABLE_MQTT             0
-    #define ENABLE_DRIVER_BASIC     0
-    #define ENABLE_DRIVER_WORD      0
-    #define ENABLE_DRIVER_BINARY    0
-#else
-    #define ENABLE_MQTT             1
-    #define ENABLE_DRIVER_BASIC     1
-    #define ENABLE_DRIVER_WORD      1
-    #define ENABLE_DRIVER_BINARY    1
+#if FIBONACCI
+
+    #undef ENABLE_DRIVER_BASIC
+    #define ENABLE_DRIVER_BASIC         0
+
+    #undef ENABLE_DRIVER_BINARY
+    #define ENABLE_DRIVER_BINARY        0
+
+    #undef ENABLE_DRIVER_WORD
+    #define ENABLE_DRIVER_WORD          0
+
 #endif
 
-#define ENABLE_DRIVER_FIBONACCI     1
+#ifndef ENABLE_DRIVER_FIBONACCI
+#define ENABLE_DRIVER_FIBONACCI         1
+#endif
+
+#ifndef ENABLE_DRIVER_BASIC
+#define ENABLE_DRIVER_BASIC             1
+#endif
+
+#ifndef ENABLE_DRIVER_BINARY
+#define ENABLE_DRIVER_BINARY            1
+#endif
+
+#ifndef ENABLE_DRIVER_WORD
+#define ENABLE_DRIVER_WORD              1
+#endif
 
 //------------------------------------------------------------------------------
 // GENERAL
@@ -41,8 +56,8 @@
 // To receive the message son the destination computer use nc:
 // nc -ul 8111
 
-#define DEBUG_UDP_IP            IPAddress(192, 168, 1, 100)
-#define DEBUG_UDP_PORT          8113
+//#define DEBUG_UDP_IP            IPAddress(192, 168, 1, 100)
+//#define DEBUG_UDP_PORT          8113
 
 //--------------------------------------------------------------------------------
 // EEPROM
@@ -63,8 +78,25 @@
 //--------------------------------------------------------------------------------
 
 #define MATRIX_PIN                  4
+
+#define MATRIX_8x8                  1
+#define MATRIX_16x16                2
+#ifndef MATRIX_SIZE
+#define MATRIX_SIZE                 MATRIX_8x8
+#endif
+
+#if MATRIX_SIZE == MATRIX_8x8
 #define MATRIX_WIDTH                8
 #define MATRIX_HEIGHT               8
+#define MATRIX_MODE                 NEO_MATRIX_TOP + NEO_MATRIX_RIGHT + NEO_MATRIX_COLUMNS + NEO_MATRIX_PROGRESSIVE
+#define MATRIX_TYPE                 NEO_GRB + NEO_KHZ800
+#else
+#define MATRIX_WIDTH                16
+#define MATRIX_HEIGHT               16
+#define MATRIX_MODE                 NEO_MATRIX_TOP + NEO_MATRIX_LEFT + NEO_MATRIX_COLUMNS + NEO_MATRIX_ZIGZAG
+#define MATRIX_TYPE                 NEO_GRB + NEO_KHZ800
+#endif
+
 #define MATRIX_DEFAULT_BRIGHTNESS   40
 #define MATRIX_SCROLL_INTERVAL      0.075
 
@@ -120,6 +152,8 @@
 // -----------------------------------------------------------------------------
 // MQTT
 // -----------------------------------------------------------------------------
+
+#define ENABLE_MQTT             0
 
 #ifndef MQTT_USE_ASYNC
 #define MQTT_USE_ASYNC          1

@@ -42,9 +42,21 @@ void buttonEvent(unsigned int id, unsigned char event) {
     DEBUG_MSG_P(PSTR("[BUTTON] Pressed #%d, event: %d\n"), id, event);
     if (event == 0) return;
 
-    // Next driver
+    // Single click enabled next driver
     if (event == BUTTON_EVENT_CLICK) driverNext();
+
+    // Double click opens AP
+    if (event == BUTTON_EVENT_DBLCLICK) createAP();
+
+    // Long click restarts board
     if (event == BUTTON_EVENT_LNGCLICK) ESP.restart();
+
+    // Long long click resets to factory settings
+    if (event == BUTTON_EVENT_LNGLNGCLICK) {
+        DEBUG_MSG_P(PSTR("\n\nFACTORY RESET\n\n"));
+        settingsFactoryReset();
+        ESP.restart();
+    }
 
 }
 

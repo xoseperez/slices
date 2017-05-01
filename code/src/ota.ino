@@ -42,13 +42,13 @@ void otaSetup() {
         #ifdef FIBONACCI
             long num = MATRIX_WIDTH * progress / total;
             for (unsigned char x=0; x<MATRIX_WIDTH; x++) {
-                if (num-- > 0) matrix->drawPixel(x, 7, color);
+                if (num-- > 0) matrix->drawPixel(x, MATRIX_HEIGHT-1, color);
             }
         #else
             long num = MATRIX_WIDTH * MATRIX_HEIGHT * progress / total;
             for (unsigned char y=0; y<MATRIX_HEIGHT; y++) {
                 for (unsigned char x=0; x<MATRIX_WIDTH; x++) {
-                    if (num-- > 0) matrix->drawPixel(x, 7-y, color);
+                    if (num-- > 0) matrix->drawPixel(x, MATRIX_HEIGHT-y-1, color);
                 }
             }
         #endif

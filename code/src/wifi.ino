@@ -195,6 +195,11 @@ void wifiSetup() {
             ntpConnect();
         }
 
+        // Display notifications
+        if (code == MESSAGE_CONNECTED || code == MESSAGE_DISCONNECTED || code == MESSAGE_ACCESSPOINT_CREATED) {
+            matrixRefresh();
+        }
+
     });
 
 }

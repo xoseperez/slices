@@ -33,24 +33,55 @@ byte* fibonacci_codes[13] = {
 };
 byte fibonacci_options[13] = {1, 2, 2, 3, 3, 3, 4, 3, 3, 3, 2, 2, 1};
 
-// pixels
-// 00000000
-// 55555333
-// 55555333
-// 55555333
-// 55555122
-// 55555122
-// 00000000
-// 00000000
-byte fibonacci_block_01a[] = {0x00, 0x00, 0x00, 0x00, 0x04, 0x00, 0x00, 0x00 };
-byte fibonacci_block_01b[] = {0x00, 0x00, 0x00, 0x00, 0x00, 0x04, 0x00, 0x00 };
-byte fibonacci_block_02[]  = {0x00, 0x00, 0x00, 0x00, 0x03, 0x03, 0x00, 0x00 };
-byte fibonacci_block_03[]  = {0x00, 0x07, 0x07, 0x07, 0x00, 0x00, 0x00, 0x00 };
-byte fibonacci_block_05[]  = {0x00, 0xF8, 0xF8, 0xF8, 0xF8, 0xF8, 0x00, 0x00 };
-byte * fibonacci_blocks[5] = { fibonacci_block_01a, fibonacci_block_01b, fibonacci_block_02, fibonacci_block_03, fibonacci_block_05};
+#if MATRIX_SIZE == MATRIX_8x8
+
+// 00000000 0
+// 55555333 1
+// 55555333 2
+// 55555333 3
+// 55555122 4
+// 55555122 5
+// 00000000 6
+// 00000000 7
+
+unsigned int fibonacci_block_01a[] = {0x00, 0x00, 0x00, 0x00, 0x04, 0x00, 0x00, 0x00 };
+unsigned int fibonacci_block_01b[] = {0x00, 0x00, 0x00, 0x00, 0x00, 0x04, 0x00, 0x00 };
+unsigned int fibonacci_block_02[]  = {0x00, 0x00, 0x00, 0x00, 0x03, 0x03, 0x00, 0x00 };
+unsigned int fibonacci_block_03[]  = {0x00, 0x07, 0x07, 0x07, 0x00, 0x00, 0x00, 0x00 };
+unsigned int fibonacci_block_05[]  = {0x00, 0xF8, 0xF8, 0xF8, 0xF8, 0xF8, 0x00, 0x00 };
+
+#else
+
+// 0000000000000000 0
+// 0000000000000000 1
+// 5555555555333333 2
+// 5555555555333333 3
+// 5555555555333333 4
+// 5555555555333333 5
+// 5555555555333333 6
+// 5555555555333333 7
+// 5555555555112222 8
+// 5555555555112222 9
+// 5555555555112222 10
+// 5555555555112222 11
+// 0000000000000000 12
+// 0000000000000000 13
+// 0000000000000000 14
+// 0000000000000000 15
+
+unsigned int fibonacci_block_01a[] = {0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0030, 0x0030, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000 };
+unsigned int fibonacci_block_01b[] = {0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0030, 0x0030, 0x0000, 0x0000, 0x0000, 0x0000 };
+unsigned int fibonacci_block_02[]  = {0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x000F, 0x000F, 0x000F, 0x000F, 0x0000, 0x0000, 0x0000, 0x0000 };
+unsigned int fibonacci_block_03[]  = {0x0000, 0x0000, 0x003F, 0x003F, 0x003F, 0x003F, 0x003F, 0x003F, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000 };
+unsigned int fibonacci_block_05[]  = {0x0000, 0x0000, 0xFFC0, 0xFFC0, 0xFFC0, 0xFFC0, 0xFFC0, 0xFFC0, 0xFFC0, 0xFFC0, 0xFFC0, 0xFFC0, 0x0000, 0x0000, 0x0000, 0x0000 };
+
+#endif
+
+unsigned int * fibonacci_blocks[5] = { fibonacci_block_01a, fibonacci_block_01b, fibonacci_block_02, fibonacci_block_03, fibonacci_block_05};
 
 unsigned long fibonacci_colors[4];
 
+unsigned char fibonacciPreviousMinute = 0;
 
 // -----------------------------------------------------------------------------
 // DRIVER
@@ -62,14 +93,14 @@ unsigned char fibonacciClockRandomCode(unsigned int value) {
     return possible[chosen];
 }
 
-void fibonacciValueMatrix(unsigned int value, byte * array) {
+void fibonacciValueMatrix(unsigned int value, unsigned int * array) {
 
     unsigned char code = fibonacciClockRandomCode(value);
 
     unsigned block = 0;
     while (code > 0) {
         if ((code & 1) == 1) {
-            for (unsigned char i=0; i<8; i++) {
+            for (unsigned char i=0; i<MATRIX_HEIGHT; i++) {
                 array[i] = array[i] + fibonacci_blocks[block][i];
             }
         }
@@ -82,45 +113,50 @@ void fibonacciValueMatrix(unsigned int value, byte * array) {
 
 void fibonacciClockLoop() {
 
-    static unsigned long last = 0;
-    static unsigned char previousMinute = 0;
+    RtcDateTime now = rtcGet();
+    int currentMinute = now.Minute();
+    if (currentMinute == fibonacciPreviousMinute) return;
+    fibonacciPreviousMinute = currentMinute;
+    int currentHour = now.Hour();
 
-    if (millis() - last > ONE_SECOND) {
+    // Load each value matrix separatelly
+    unsigned int hours[MATRIX_HEIGHT] = {0};
+    if (currentHour > 12) currentHour -= 12;
+    fibonacciValueMatrix(currentHour, hours);
+    unsigned int minutes[MATRIX_HEIGHT] = {0};
+    fibonacciValueMatrix(currentMinute / 5, minutes);
 
-        last = millis();
+    // Prepare the display
+    Adafruit_NeoMatrix * matrix = getMatrix();
+    matrix->fillScreen(0);
 
-        RtcDateTime now = rtcGet();
-        int currentMinute = now.Minute();
-        if (currentMinute == previousMinute) return;
-        previousMinute = currentMinute;
-        int currentHour = now.Hour();
-
-        // Load each value matrix separatelly
-        byte hours[8] = {0};
-        if (currentHour > 12) currentHour -= 12;
-        fibonacciValueMatrix(currentHour, hours);
-        byte minutes[8] = {0};
-        fibonacciValueMatrix(currentMinute / 5, minutes);
-
-        // Prepare the display
-        Adafruit_NeoMatrix * matrix = getMatrix();
-        matrix->fillScreen(0);
-
-        // Walk the matrices choosing the colors
-        for (unsigned char y = 1; y < 6; y++) {
-            for (unsigned char x = 0; x < 8; x++) {
-                int value = ((hours[y] >> x) & 1) + 2 * ((minutes[y] >> x) & 1);
-                matrix->drawPixel(7-x, y, fibonacci_colors[value]);
-            }
+    // Walk the matrices choosing the colors
+    #if MATRIX_SIZE == MATRIX_8x8
+        int start = 1;
+        int end = 6;
+    #else
+        int start = 2;
+        int end = 12;
+    #endif
+    for (unsigned char y = start; y < end; y++) {
+        for (unsigned char x = 0; x < MATRIX_WIDTH; x++) {
+            int value = ((hours[y] >> x) & 1) + 2 * ((minutes[y] >> x) & 1);
+            matrix->drawPixel(MATRIX_WIDTH - x - 1, y, fibonacci_colors[value]);
         }
-
-        for (unsigned char x = 8 - currentMinute % 5; x < 8; x++) {
-            matrix->drawPixel(x, 7, fibonacci_colors[0]);
-        }
-
-        matrix->show();
-
     }
+
+    for (unsigned char n = 0; n < currentMinute % 5; n++) {
+        #if MATRIX_SIZE == MATRIX_8x8
+            matrix->drawPixel(MATRIX_WIDTH - n - 1, MATRIX_HEIGHT - 1, fibonacci_colors[0]);
+        #else
+            matrix->drawPixel(MATRIX_WIDTH - n*3 - 1, MATRIX_HEIGHT - 1, fibonacci_colors[0]);
+            matrix->drawPixel(MATRIX_WIDTH - n*3 - 1, MATRIX_HEIGHT - 2, fibonacci_colors[0]);
+            matrix->drawPixel(MATRIX_WIDTH - n*3 - 2, MATRIX_HEIGHT - 1, fibonacci_colors[0]);
+            matrix->drawPixel(MATRIX_WIDTH - n*3 - 2, MATRIX_HEIGHT - 2, fibonacci_colors[0]);
+        #endif
+    }
+
+    matrixRefresh();
 
 }
 
@@ -133,6 +169,14 @@ void fibonacciClockSetup() {
     fibonacci_colors[2] = matrix->Color(10, 255, 10);
     fibonacci_colors[3] = matrix->Color(10, 10, 255);
 
-    driverRegister("Fibonacci clock", NULL, fibonacciClockLoop, NULL);
+    driverRegister(
+        "Fibonacci clock",
+        []{
+            fibonacciPreviousMinute = 99;
+            fibonacciClockLoop();
+        },
+        fibonacciClockLoop,
+        NULL
+    );
 
 }

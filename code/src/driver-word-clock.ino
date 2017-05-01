@@ -212,7 +212,7 @@ void wordClockStart() {
 
     String text = wordClockCatalan(currentHour, currentMinute);
 
-    matrixScroll(text.c_str(), true, wordClockStart);
+    matrixScroll(3, text.c_str(), true, wordClockStart);
 
 }
 

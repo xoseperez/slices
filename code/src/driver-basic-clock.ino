@@ -8,17 +8,53 @@ Copyright (C) 2017 by Xose Pérez <xose dot perez at gmail dot com>
 
 #include <Adafruit_NeoMatrix.h>
 
+int basicClockPrevious = 99;
+
 // -----------------------------------------------------------------------------
 // DRIVER
 // -----------------------------------------------------------------------------
+
+#if MATRIX_SIZE == MATRIX_8x8
 
 void basicClockStart() {
     RtcDateTime now = rtcGet();
     char buffer[6];
     snprintf(buffer, 6, "%02u:%02u", now.Hour(), now.Minute());
-    matrixScroll(buffer, true, basicClockStart);
+    matrixScroll(0, buffer, true, basicClockStart);
 }
 
 void basicClockSetup() {
     driverRegister("Basic clock", basicClockStart, NULL, NULL);
 }
+
+#else
+
+void basicClockLoop() {
+
+    RtcDateTime now = rtcGet();
+    if (now.Minute() == basicClockPrevious) return;
+    basicClockPrevious = now.Minute();
+
+    char buffer[4];
+    matrixClear();
+    snprintf(buffer, 3, "%02u", now.Hour());
+    matrixWrite(2, 0, buffer);
+    snprintf(buffer, 3, "%02u", now.Minute());
+    matrixWrite(2, 8, buffer);
+    matrixRefresh();
+
+}
+
+void basicClockSetup() {
+    driverRegister(
+        "Basic clock",
+        []{
+            basicClockPrevious = 99;
+            basicClockLoop();
+        },
+        basicClockLoop,
+        NULL
+    );
+}
+
+#endif

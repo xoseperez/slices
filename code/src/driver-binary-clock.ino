@@ -22,7 +22,15 @@ void binaryClockDraw(byte number, byte column, byte red, byte green, byte blue) 
 
     for (byte row=5; row>1; row--) {
         unsigned long use_color = (number & 1) ? color_on : color_off;
-        matrix->drawPixel(column, row, use_color);
+
+        #if MATRIX_SIZE == MATRIX_8x8
+            matrix->drawPixel(column, row, use_color);
+        #else
+            matrix->drawPixel(column*2, row*2, use_color);
+            matrix->drawPixel(column*2+1, row*2, use_color);
+            matrix->drawPixel(column*2, row*2+1, use_color);
+            matrix->drawPixel(column*2+1, row*2+1, use_color);
+        #endif
         number >>= 1;
     }
 
@@ -52,9 +60,7 @@ void binaryClockLoop() {
         binaryClockDraw(currentSecond / 10, 6, 0, 0, 255);
         binaryClockDraw(currentSecond % 10, 7, 0, 0, 255);
 
-        matrix->show();
-
-        //sound(262, 100);
+        matrixRefresh();
 
     }
 

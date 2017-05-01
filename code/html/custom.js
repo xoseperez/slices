@@ -37,10 +37,6 @@ function doUpdate() {
         var data = form.serializeArray();
         delete(data['filename']);
         websock.send(JSON.stringify({'config': data}));
-        $(".powExpected").val(0);
-        $("input[name='powExpectedReset']")
-            .prop("checked", false)
-            .iphoneStyle("refresh");
     }
     return false;
 }
@@ -171,7 +167,6 @@ function showPanel() {
     $(".panel").hide();
     $("#" + $(this).attr("data")).show();
     if ($("#layout").hasClass('active')) toggleMenu();
-    $("input[type='checkbox']").iphoneStyle("calculateDimensions").iphoneStyle("refresh");
 };
 
 function toggleMenu() {
@@ -322,9 +317,7 @@ function processData(data) {
         var element = $("input[name=" + key + "]");
         if (element.length > 0) {
             if (element.attr('type') == 'checkbox') {
-                element
-                    .prop("checked", data[key])
-                    .iphoneStyle("refresh");
+                element.prop("checked", data[key])
             } else if (element.attr('type') == 'radio') {
                 element.val([data[key]]);
             } else {

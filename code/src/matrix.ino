@@ -10,6 +10,7 @@ Copyright (C) 2017 by Xose Pérez <xose dot perez at gmail dot com>
 #include <Adafruit_NeoMatrix.h>
 #include <Adafruit_NeoPixel.h>
 #include <Ticker.h>
+#include <ESP8266WiFi.h>
 
 //#include "fonts/FreeSansBold5pt8b.h"
 
@@ -19,7 +20,8 @@ Ticker scrollTicker;
 char * _text;
 int _textWidth = 0;
 bool _scrollOnce = false;
-int _scrollPosition = -9999;
+int _scrollX = -9999;
+int _scrollY = 0;
 blindCallback _endScroll;
 
 // -----------------------------------------------------------------------------
@@ -44,19 +46,47 @@ void matrixClear() {
     matrix->show();
 }
 
-void matrixScroll(const char * text, bool once, blindCallback endScroll) {
+void matrixRefresh() {
+    Adafruit_NeoMatrix * matrix = getMatrix();
+    if (!wifiConnected()) {
+        if (WiFi.getMode() == WIFI_AP) {
+            matrix->drawPixel(0, MATRIX_HEIGHT - 1, matrix->Color(10, 10, 255));
+        } else {
+            matrix->drawPixel(0, MATRIX_HEIGHT - 1, matrix->Color(255, 10, 10));
+        }
+    } else if (!ntpConnected()) {
+        matrix->drawPixel(0, MATRIX_HEIGHT - 1, matrix->Color(255, 255, 10));
+    }
+    matrix->show();
+}
+
+void matrixWrite(int x, int y, const char * text, unsigned long color) {
+    Adafruit_NeoMatrix * matrix = getMatrix();
+    matrix->setCursor(x, y);
+    matrix->setTextColor(color);
+    matrix->print(text);
+}
+
+void matrixWrite(int x, int y, const char * text) {
+    Adafruit_NeoMatrix * matrix = getMatrix();
+    unsigned long color = matrix->Color(10, 10, 255);
+    matrixWrite(x, y, text, color);
+}
+
+void matrixScroll(byte y, const char * text, bool once, blindCallback endScroll) {
     Adafruit_NeoMatrix * matrix = getMatrix();
     if (_text) free(_text);
     _text = strdup(text);
     _textWidth = getTextWidth(text);
     _scrollOnce = once;
-    _scrollPosition = matrix->width();
+    _scrollY = y;
+    _scrollX = matrix->width();
     _endScroll = endScroll;
     scrollTicker.attach(MATRIX_SCROLL_INTERVAL, matrixLoop);
 }
 
 void matrixScroll(const char * text) {
-    matrixScroll(text, false, NULL);
+    matrixScroll(0, text, false, NULL);
 }
 
 void matrixStopScroll() {
@@ -67,17 +97,15 @@ void matrixLoop() {
 
     Adafruit_NeoMatrix * matrix = getMatrix();
 
-    if (--_scrollPosition < -_textWidth) {
+    if (--_scrollX < -_textWidth) {
         if (_scrollOnce) matrixStopScroll();
         if (_endScroll) (_endScroll)();
         if (_scrollOnce) return;
-        _scrollPosition = matrix->width();
+        _scrollX = matrix->width();
     }
 
     matrix->fillScreen(0);
-    matrix->setCursor(_scrollPosition, 0);
-    matrix->setTextColor(matrix->Color(255, 0, 0));
-    matrix->print(_text);
+    matrixWrite(_scrollX, _scrollY, _text, matrix->Color(255, 0, 0));
     matrix->show();
 
 }
@@ -89,9 +117,8 @@ void matrixSetup() {
         MATRIX_WIDTH,
         MATRIX_HEIGHT,
         MATRIX_PIN,
-        NEO_MATRIX_TOP     + NEO_MATRIX_RIGHT +
-        NEO_MATRIX_COLUMNS + NEO_MATRIX_PROGRESSIVE,
-        NEO_GRB            + NEO_KHZ800
+        MATRIX_MODE,
+        MATRIX_TYPE
     );
 
     _matrix->begin();

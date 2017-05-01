@@ -2,7 +2,7 @@
 
 Slices is an ESP8266 based clock with a LED matrix display.
 
-It's an evolution of a previous a previous project ([a wordclock](http://tinkerman.cat/wordlock)). This time I wanted somethin more flexible and in different sizes. Goals are:
+It's an evolution of a previous project ([a wordclock](http://tinkerman.cat/wordlock)), with the following goals:
 
 * Replace the ATMega328P with an ESP8266 (NTP support and user interaction)
 * Smaller sizes (8x8 LED matrices)
