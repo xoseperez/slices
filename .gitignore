@@ -1,0 +1,5 @@
+.pioenvs
+.piolibdeps
+.sconsign.dblite
+node_modules
+*.gch
