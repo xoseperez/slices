@@ -106,6 +106,16 @@ void matrixLoop() {
 
 }
 
+void matrixTest() {
+    Adafruit_NeoMatrix * matrix = getMatrix();
+    matrix->fillScreen(0);
+    for (int i=0; i< MATRIX_HEIGHT * MATRIX_WIDTH; i++) {
+        matrix->setPixelColor(i, matrix->Color(255, 0, 0));
+        matrix->show();
+        delay(200);
+    }
+}
+
 void matrixSetup() {
 
     // Create object
