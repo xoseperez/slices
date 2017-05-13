@@ -6,7 +6,9 @@ Copyright (C) 2017 by Xose Pérez <xose dot perez at gmail dot com>
 
 */
 
-#include <Adafruit_NeoMatrix.h>
+#if ENABLE_DRIVER_FIBONACCI
+
+#include <FastLED_GFX.h>
 
 // blocks are:
 // number : 1, 2, 3, 4,  5
@@ -33,7 +35,7 @@ byte* fibonacci_codes[13] = {
 };
 byte fibonacci_options[13] = {1, 2, 2, 3, 3, 3, 4, 3, 3, 3, 2, 2, 1};
 
-#if MATRIX_SIZE == MATRIX_8x8
+#if (MATRIX_SIZE == MATRIX_8x8 || MATRIX_SIZE == MATRIX_8x8_60)
 
 // 00000000 0
 // 55555333 1
@@ -127,11 +129,10 @@ void fibonacciClockLoop() {
     fibonacciValueMatrix(currentMinute / 5, minutes);
 
     // Prepare the display
-    Adafruit_NeoMatrix * matrix = getMatrix();
-    matrix->fillScreen(0);
+    matrixClear();
 
     // Walk the matrices choosing the colors
-    #if MATRIX_SIZE == MATRIX_8x8
+    #if (MATRIX_SIZE == MATRIX_8x8 || MATRIX_SIZE == MATRIX_8x8_60)
         int start = 1;
         int end = 6;
     #else
@@ -141,18 +142,18 @@ void fibonacciClockLoop() {
     for (unsigned char y = start; y < end; y++) {
         for (unsigned char x = 0; x < MATRIX_WIDTH; x++) {
             int value = ((hours[y] >> x) & 1) + 2 * ((minutes[y] >> x) & 1);
-            matrix->drawPixel(MATRIX_WIDTH - x - 1, y, fibonacci_colors[value]);
+            matrixSetPixelColor(MATRIX_WIDTH - x - 1, y, fibonacci_colors[value]);
         }
     }
 
     for (unsigned char n = 0; n < currentMinute % 5; n++) {
-        #if MATRIX_SIZE == MATRIX_8x8
-            matrix->drawPixel(MATRIX_WIDTH - n - 1, MATRIX_HEIGHT - 1, MATRIX_ORANGE);
+        #if (MATRIX_SIZE == MATRIX_8x8 || MATRIX_SIZE == MATRIX_8x8_60)
+            matrixSetPixelColor(MATRIX_WIDTH - n - 1, MATRIX_HEIGHT - 1, CRGB::Orange);
         #else
-            matrix->drawPixel(MATRIX_WIDTH - n*3 - 1, MATRIX_HEIGHT - 1, MATRIX_ORANGE);
-            matrix->drawPixel(MATRIX_WIDTH - n*3 - 1, MATRIX_HEIGHT - 2, MATRIX_ORANGE);
-            matrix->drawPixel(MATRIX_WIDTH - n*3 - 2, MATRIX_HEIGHT - 1, MATRIX_ORANGE);
-            matrix->drawPixel(MATRIX_WIDTH - n*3 - 2, MATRIX_HEIGHT - 2, MATRIX_ORANGE);
+            matrixSetPixelColor(MATRIX_WIDTH - n*3 - 1, MATRIX_HEIGHT - 1, CRGB::Orange);
+            matrixSetPixelColor(MATRIX_WIDTH - n*3 - 1, MATRIX_HEIGHT - 2, CRGB::Orange);
+            matrixSetPixelColor(MATRIX_WIDTH - n*3 - 2, MATRIX_HEIGHT - 1, CRGB::Orange);
+            matrixSetPixelColor(MATRIX_WIDTH - n*3 - 2, MATRIX_HEIGHT - 2, CRGB::Orange);
         #endif
     }
 
@@ -162,10 +163,10 @@ void fibonacciClockLoop() {
 
 void fibonacciClockSetup() {
 
-    fibonacci_colors[0] = MATRIX_GREY;
-    fibonacci_colors[1] = MATRIX_RED;
-    fibonacci_colors[2] = MATRIX_GREEN;
-    fibonacci_colors[3] = MATRIX_BLUE;
+    fibonacci_colors[0] = 0x101010;
+    fibonacci_colors[1] = CRGB::Red;
+    fibonacci_colors[2] = CRGB::Green;
+    fibonacci_colors[3] = CRGB::Blue;
 
     driverRegister(
         "fibonacci-clock",
@@ -178,3 +179,5 @@ void fibonacciClockSetup() {
     );
 
 }
+
+#endif

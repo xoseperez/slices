@@ -33,6 +33,7 @@ unsigned char driverRegister(const char * name, blindCallback startFn, blindCall
     driver.loopFn = loopFn;
     driver.stopFn = stopFn;
     _drivers.push_back(driver);
+    DEBUG_MSG_P(PSTR("[DRIVER] Registering: %s\n"), name);
     return _drivers.size() - 1;
 }
 
@@ -47,6 +48,7 @@ void driverLoop() {
 void driverStop() {
     matrixStopScroll();
     matrixClear();
+    matrixRefresh();
     if (_drivers[_currentDriver].stopFn) (_drivers[_currentDriver].stopFn)();
 }
 

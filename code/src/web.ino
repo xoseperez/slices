@@ -120,12 +120,14 @@ void _wsParse(uint32_t client_id, uint8_t * payload, size_t length) {
             }
         }
 
+        #if ENABLE_DRIVER_CANVAS
         if (action.equals("color") && root.containsKey("data")) {
             JsonObject& data = root["data"];
             unsigned char x = data["x"].as<int>();
             unsigned char y = data["y"].as<int>();
             canvasDraw(x, y, data["color"]);
         }
+        #endif
 
     };
 

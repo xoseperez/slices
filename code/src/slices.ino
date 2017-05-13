@@ -152,6 +152,7 @@ void setup() {
     ntpSetup();
 
     matrixSetup();
+    //matrixTest();
 
     // drivers
     #if ENABLE_DRIVER_BASIC
@@ -190,5 +191,10 @@ void loop() {
     settingsLoop();
 
     driverLoop();
+
+    // Clock code
+    #if ENABLE_DRIVER_CIRCLE
+        //circleClockLoop();
+    #endif
 
 }

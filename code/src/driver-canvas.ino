@@ -6,7 +6,9 @@ Copyright (C) 2017 by Xose Pérez <xose dot perez at gmail dot com>
 
 */
 
-#include <Adafruit_NeoMatrix.h>
+#if ENABLE_DRIVER_CANVAS
+
+#include <FastLED_GFX.h>
 
 // -----------------------------------------------------------------------------
 // DRIVER
@@ -23,12 +25,13 @@ void canvasDraw(byte x, byte y, const char * color) {
     unsigned char green = (value >> 8) & 0xFF;
     unsigned char blue = (value) & 0xFF;
 
-    Adafruit_NeoMatrix * matrix = getMatrix();
-    matrix->drawPixel(x, y, matrix->Color(red, green, blue));
-    matrix->show();
+    matrixSetPixelColor(x, y, CRGB(red, green, blue));
+    matrixRefresh();
 
 }
 
 void canvasSetup() {
     driverRegister("canvas", NULL, NULL, NULL);
 }
+
+#endif

@@ -6,13 +6,15 @@ Copyright (C) 2017 by Xose Pérez <xose dot perez at gmail dot com>
 
 */
 
-#include <Adafruit_GFX.h>
-#include <Adafruit_NeoMatrix.h>
-#include <Adafruit_NeoPixel.h>
+#include <FastLED.h>
+#include <FastLED_GFX.h>
+#include <FastLED_Matrix.h>
 #include <Ticker.h>
 #include <ESP8266WiFi.h>
 
-Adafruit_NeoMatrix * _matrix;
+CRGB _leds[MATRIX_LEDS];
+FastLED_Matrix * _matrix;
+
 Ticker scrollTicker;
 
 char * _text;
@@ -26,110 +28,121 @@ blindCallback _endScroll;
 // SETUP
 // -----------------------------------------------------------------------------
 
-Adafruit_NeoMatrix * getMatrix() {
-    return _matrix;
-}
-
 unsigned int getTextWidth(const char * text) {
-    Adafruit_NeoMatrix * matrix = getMatrix();
     int16_t x1, y1;
     uint16_t w, h;
-    matrix->getTextBounds((char *) text, 0, 0, &x1, &y1, &w, &h);
+    _matrix->getTextBounds((char *) text, 0, 0, &x1, &y1, &w, &h);
     return w;
 }
 
-void matrixClear() {
-    Adafruit_NeoMatrix * matrix = getMatrix();
-    matrix->fillScreen(0);
-    matrix->show();
-}
-
-void matrixRefresh() {
-    Adafruit_NeoMatrix * matrix = getMatrix();
-    if (!wifiConnected()) {
-        if (WiFi.getMode() == WIFI_AP) {
-            matrix->drawPixel(0, MATRIX_HEIGHT - 1, MATRIX_BLUE);
-        } else {
-            matrix->drawPixel(0, MATRIX_HEIGHT - 1, MATRIX_RED);
-        }
-    } else if (!ntpConnected()) {
-        matrix->drawPixel(0, MATRIX_HEIGHT - 1, MATRIX_ORANGE);
-    }
-    matrix->show();
-}
-
 void matrixWrite(int x, int y, const char * text, unsigned long color) {
-    Adafruit_NeoMatrix * matrix = getMatrix();
-    matrix->setCursor(x, y);
-    matrix->setTextColor(color);
-    matrix->print(text);
+    _matrix->setCursor(x, y);
+    _matrix->setTextColor(color);
+    _matrix->print(text);
 }
 
 void matrixWrite(int x, int y, const char * text) {
-    matrixWrite(x, y, text, MATRIX_BLUE);
+    matrixWrite(x, y, text, CRGB::Blue);
 }
 
 void matrixScroll(byte y, const char * text, bool once, blindCallback endScroll) {
-    Adafruit_NeoMatrix * matrix = getMatrix();
     if (_text) free(_text);
     _text = strdup(text);
     _textWidth = getTextWidth(text);
     _scrollOnce = once;
     _scrollY = y;
-    _scrollX = matrix->width();
+    _scrollX = _matrix->width();
     _endScroll = endScroll;
     scrollTicker.attach_ms(MATRIX_SCROLL_INTERVAL, matrixLoop);
+    //DEBUG_MSG_P(PSTR("[MATRIX] Scrolling text '%s'\n"), text);
 }
 
 void matrixScroll(const char * text) {
     matrixScroll(0, text, false, NULL);
 }
 
-void matrixStopScroll() {
-    scrollTicker.detach();
-}
-
 void matrixLoop() {
-
-    Adafruit_NeoMatrix * matrix = getMatrix();
 
     if (--_scrollX < -_textWidth) {
         if (_scrollOnce) matrixStopScroll();
         if (_endScroll) (_endScroll)();
         if (_scrollOnce) return;
-        _scrollX = matrix->width();
+        _scrollX = _matrix->width();
     }
 
-    matrix->fillScreen(0);
-    matrixWrite(_scrollX, _scrollY, _text, MATRIX_RED);
-    matrix->show();
+    FastLED.clear();
+    matrixWrite(_scrollX, _scrollY, _text, CRGB::Red);
+    matrixRefresh();
 
 }
 
+void matrixRefresh() {
+
+    if (!wifiConnected()) {
+        if (WiFi.getMode() == WIFI_AP) {
+            _matrix->drawPixel(0, MATRIX_HEIGHT - 1, CRGB::Blue);
+        } else {
+            _matrix->drawPixel(0, MATRIX_HEIGHT - 1, CRGB::Red);
+        }
+    } else if (!ntpConnected()) {
+        _matrix->drawPixel(0, MATRIX_HEIGHT - 1, CRGB::Orange);
+    }
+
+    // Clock code
+    #if ENABLE_DRIVER_CIRCLE
+        circleClockLoop();
+    #endif
+
+    FastLED.show();
+
+}
+
+
+void matrixStopScroll() {
+    scrollTicker.detach();
+}
+
+void matrixClear() {
+    FastLED.clear();
+}
+
 void matrixTest() {
-    Adafruit_NeoMatrix * matrix = getMatrix();
-    matrix->fillScreen(0);
-    for (int i=0; i< MATRIX_HEIGHT * MATRIX_WIDTH; i++) {
-        matrix->setPixelColor(i, matrix->Color(255, 0, 0));
-        matrix->show();
+    unsigned long timeout;
+    matrixClear();
+    for (int i=0; i< MATRIX_LEDS; i++) {
+        _leds[i] = CRGB::Red;
+        FastLED.show();
         delay(200);
     }
 }
 
+void matrixSetPixelColor(unsigned int x, unsigned int y, CRGB color) {
+    if (0 > x || x >= MATRIX_WIDTH) return;
+    if (0 > y || y >= MATRIX_HEIGHT) return;
+    unsigned int index = matrixGetIndex(x, y);
+    _leds[index] = color;
+}
+
+void matrixAddPixelColor(unsigned int index, CRGB color) {
+    _leds[index] += color;
+}
+
+void matrixSetPixelColor(unsigned int index, CRGB color) {
+    _leds[index] = color;
+}
+
+unsigned int matrixGetIndex(unsigned int x, unsigned int y) {
+    return (MATRIX_WIDTH - x - 1) * MATRIX_WIDTH + y;
+}
+
 void matrixSetup() {
 
-    // Create object
-    _matrix = new Adafruit_NeoMatrix(
-        MATRIX_WIDTH,
-        MATRIX_HEIGHT,
-        MATRIX_PIN,
-        MATRIX_MODE,
-        MATRIX_TYPE
-    );
+    FastLED.addLeds<MATRIX_CHIPSET, MATRIX_PIN, MATRIX_COLOR_ORDER>(_leds, MATRIX_LEDS).setCorrection( TypicalLEDStrip );
+    FastLED.setBrightness(MATRIX_DEFAULT_BRIGHTNESS);
 
-    _matrix->begin();
+    _matrix = new FastLED_Matrix(MATRIX_WIDTH, MATRIX_HEIGHT);
+    _matrix->setPixels(_leds);
+    _matrix->setIndexFunction(matrixGetIndex);
     _matrix->setTextWrap(false);
-    //_matrix->setFont(&--);
-    _matrix->setBrightness(MATRIX_DEFAULT_BRIGHTNESS);
 
 }

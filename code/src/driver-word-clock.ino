@@ -6,7 +6,9 @@ Copyright (C) 2017 by Xose Pérez <xose dot perez at gmail dot com>
 
 */
 
-#include <Adafruit_NeoMatrix.h>
+#if ENABLE_DRIVER_WORD
+
+#include <FastLED_GFX.h>
 
 #define LANGUAGE_CATALA     1
 #define LANGUAGE_ESPANOL    2
@@ -219,3 +221,5 @@ void wordClockStart() {
 void wordClockSetup() {
     driverRegister("word-clock", wordClockStart, NULL, NULL);
 }
+
+#endif

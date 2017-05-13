@@ -21,6 +21,16 @@
 
 #endif
 
+#if MATRIX_SIZE == 3
+
+    #undef ENABLE_DRIVER_GAME_OF_LIFE
+    #define ENABLE_DRIVER_GAME_OF_LIFE  0
+
+    #undef ENABLE_DRIVER_CIRCLE
+    #define ENABLE_DRIVER_CIRCLE        1
+
+#endif
+
 #ifndef ENABLE_DRIVER_FIBONACCI
 #define ENABLE_DRIVER_FIBONACCI         1
 #endif
@@ -96,31 +106,39 @@
 
 #define MATRIX_8x8                  1
 #define MATRIX_16x16                2
+#define MATRIX_8x8_60               3
+
 #ifndef MATRIX_SIZE
 #define MATRIX_SIZE                 MATRIX_8x8
 #endif
 
 #if MATRIX_SIZE == MATRIX_8x8
+#define MATRIX_LEDS                 64
 #define MATRIX_WIDTH                8
 #define MATRIX_HEIGHT               8
 #define MATRIX_MODE                 NEO_MATRIX_TOP + NEO_MATRIX_RIGHT + NEO_MATRIX_COLUMNS + NEO_MATRIX_PROGRESSIVE
 #define MATRIX_TYPE                 NEO_GRB + NEO_KHZ800
-#else
+
+#elif MATRIX_SIZE == MATRIX_16x16
+#define MATRIX_LEDS                 256
 #define MATRIX_WIDTH                16
 #define MATRIX_HEIGHT               16
 #define MATRIX_MODE                 NEO_MATRIX_TOP + NEO_MATRIX_LEFT + NEO_MATRIX_COLUMNS + NEO_MATRIX_ZIGZAG
 #define MATRIX_TYPE                 NEO_GRB + NEO_KHZ800
+
+#elif MATRIX_SIZE == MATRIX_8x8_60
+#define MATRIX_LEDS                 124
+#define MATRIX_WIDTH                8
+#define MATRIX_HEIGHT               8
+#define MATRIX_CHIPSET              WS2812B
+#define MATRIX_COLOR_ORDER          GRB
+#define CIRCLE_LENGTH               60
+#define CIRCLE_START                (MATRIX_HEIGHT * MATRIX_WIDTH)
+
 #endif
 
 #define MATRIX_DEFAULT_BRIGHTNESS   40
 #define MATRIX_SCROLL_INTERVAL      75
-
-// Basic colors
-#define MATRIX_RED                  getMatrix()->Color(255,10,10)
-#define MATRIX_GREEN                getMatrix()->Color(10,255,10)
-#define MATRIX_BLUE                 getMatrix()->Color(10,10,255)
-#define MATRIX_GREY                 getMatrix()->Color(64,64,64)
-#define MATRIX_ORANGE               getMatrix()->Color(255,255,10)
 
 //--------------------------------------------------------------------------------
 // BUTTON

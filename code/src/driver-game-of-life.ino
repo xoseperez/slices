@@ -6,7 +6,9 @@ Copyright (C) 2017 by Xose Pérez <xose dot perez at gmail dot com>
 
 */
 
-#include <Adafruit_NeoMatrix.h>
+#if ENABLE_DRIVER_GAME_OF_LIFE
+
+#include <FastLED_GFX.h>
 #include <Ticker.h>
 
 Ticker gameOfLifeTicker;
@@ -23,8 +25,8 @@ bool gameOfLifeStatus[MATRIX_WIDTH][MATRIX_HEIGHT] = {false};
 #define GAMEOFLIFE_INTERVAL         200
 #define GAMEOFLIFE_AUTORESET        50
 
-#define GAMEOFLIFE_NEW              MATRIX_GREEN
-#define GAMEOFLIFE_OLD              MATRIX_BLUE
+#define GAMEOFLIFE_NEW              CRGB::Green
+#define GAMEOFLIFE_OLD              CRGB::Blue
 
 // -----------------------------------------------------------------------------
 // DRIVER
@@ -56,7 +58,6 @@ void gameOfLifeInit() {
     byte x,y;
     byte index;
 
-    Adafruit_NeoMatrix * matrix = getMatrix();
     matrixClear();
 
     numCells = 0;
@@ -73,7 +74,7 @@ void gameOfLifeInit() {
         y = random(0, MATRIX_HEIGHT);
         if (!gameOfLifeStatus[x][y]) {
             gameOfLifeStatus[x][y] = true;
-            matrix->drawPixel(x, y, GAMEOFLIFE_NEW);
+            matrixSetPixelColor(x, y, GAMEOFLIFE_NEW);
             numCells++;
         }
 
@@ -93,8 +94,7 @@ void gameOfLifeLoop() {
     byte x, y;
     unsigned int index;
 
-    Adafruit_NeoMatrix * matrix = getMatrix();
-    matrix->clear();
+    matrixClear();
 
     bool gameOfLifeNew[MATRIX_WIDTH][MATRIX_HEIGHT] = {false};
 
@@ -110,7 +110,7 @@ void gameOfLifeLoop() {
 
                 // keeps on living if 2-3 neighbours
                 if (neighbours == 2 || neighbours == 3) {
-                    matrix->drawPixel(x, y, GAMEOFLIFE_OLD);
+                    matrixSetPixelColor(x, y, GAMEOFLIFE_OLD);
                     gameOfLifeNew[x][y] = true;
                     numCells++;
 
@@ -124,7 +124,7 @@ void gameOfLifeLoop() {
 
                 // comes to life if 3 living neighbours
                 if (neighbours == 3) {
-                    matrix->drawPixel(x, y, GAMEOFLIFE_NEW);
+                    matrixSetPixelColor(x, y, GAMEOFLIFE_NEW);
                     gameOfLifeNew[x][y] = true;
                     numCells++;
 
@@ -137,7 +137,7 @@ void gameOfLifeLoop() {
         }
     }
 
-    matrix->show();
+    matrixRefresh();
 
     if (numCells == prevCells) autoResetCount++;
     if (autoResetCount == GAMEOFLIFE_AUTORESET) {
@@ -164,3 +164,5 @@ void gameOfLifeStop() {
 void gameOfLifeSetup() {
     driverRegister("game-of-life", gameOfLifeStart, NULL, gameOfLifeStop);
 }
+
+#endif
