@@ -76,18 +76,20 @@ void matrixLoop() {
 
 }
 
-void matrixRefresh() {
+void matrixRefresh(bool show_wifi_status) {
 
-    if (!wifiConnected()) {
-        if (WiFi.getMode() == WIFI_AP) {
-            _matrix->drawPixel(0, MATRIX_HEIGHT - 1, CRGB::Blue);
+    if (show_wifi_status) {
+        if (!wifiConnected()) {
+            if (WiFi.getMode() == WIFI_AP) {
+                _matrix->drawPixel(0, MATRIX_HEIGHT - 1, CRGB::Blue);
+            } else {
+                _matrix->drawPixel(0, MATRIX_HEIGHT - 1, CRGB::Red);
+            }
+        } else if (!ntpConnected()) {
+            _matrix->drawPixel(0, MATRIX_HEIGHT - 1, CRGB::Orange);
         } else {
-            _matrix->drawPixel(0, MATRIX_HEIGHT - 1, CRGB::Red);
+            _matrix->drawPixel(0, MATRIX_HEIGHT - 1, CRGB::Black);
         }
-    } else if (!ntpConnected()) {
-        _matrix->drawPixel(0, MATRIX_HEIGHT - 1, CRGB::Orange);
-    } else {
-        _matrix->drawPixel(0, MATRIX_HEIGHT - 1, CRGB::Black);
     }
 
     // Clock code
@@ -99,6 +101,9 @@ void matrixRefresh() {
 
 }
 
+void matrixRefresh() {
+    matrixRefresh(true);
+}
 
 void matrixStopScroll() {
     scrollTicker.detach();

@@ -228,8 +228,9 @@ void info() {
 
     // -------------------------------------------------------------------------
 
-    infoMemory("EEPROM", SPI_FLASH_SEC_SIZE, SPI_FLASH_SEC_SIZE - settingsSize());
-    infoMemory("Stack", CONT_STACKSIZE, getFreeStack());
+    // TODO: crashes, don't know why
+    //infoMemory("EEPROM", SPI_FLASH_SEC_SIZE, SPI_FLASH_SEC_SIZE - settingsSize());
+    //infoMemory("Stack", CONT_STACKSIZE, getFreeStack());
     DEBUG_MSG_P(PSTR("\n"));
 
     // -------------------------------------------------------------------------

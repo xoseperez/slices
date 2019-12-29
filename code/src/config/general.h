@@ -27,6 +27,8 @@
     #undef ENABLE_DRIVER_CANVAS
     #define ENABLE_DRIVER_CANVAS        0
 
+    #define DEVICE_NAME                 "FIBONACCI"
+
 #endif
 
 #if CIRCLE_SIZE > 0
@@ -42,7 +44,6 @@
     #define ENABLE_DRIVER_CIRCLE        0
 
 #endif
-
 
 //------------------------------------------------------------------------------
 // GENERAL
@@ -114,12 +115,22 @@
 #if MATRIX_SIZE == MATRIX_8x8
 #define MATRIX_WIDTH                8
 #define MATRIX_HEIGHT               8
+#ifndef DEVICE_NAME
+    #define DEVICE_NAME             "SLICES-SMALL"
+#endif
 #elif MATRIX_SIZE == MATRIX_16x16
 #define MATRIX_WIDTH                16
 #define MATRIX_HEIGHT               16
+#ifndef DEVICE_NAME
+    #define DEVICE_NAME             "SLICES-BIG"
+#endif
 #elif MATRIX_SIZE == MATRIX_16x8
 #define MATRIX_WIDTH                16
 #define MATRIX_HEIGHT               8
+#endif
+
+#ifndef DEVICE_NAME
+    #define DEVICE_NAME             "SLICES-CLOCK"
 #endif
 
 #define MATRIX_CHIPSET              WS2812B
