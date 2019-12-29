@@ -12,6 +12,31 @@ grid_shift=0;
 //grid_step=8;
 //grid_shift=0.4;
 
+// Matrix 10x10
+//grid_size=8;
+//grid_step=10;
+//grid_shift=0;
+
+// LED circle 60
+led_radius_inner=72.39;
+led_radius_outer=78.74;
+led_radius=(led_radius_inner+led_radius_outer)/2;
+led_width=(led_radius_outer-led_radius_inner);
+led_side=6;
+led_count=60;
+led_angle_shift=0;
+led_circle_grid=1;
+
+// LED circle 24
+//led_radius_inner=72.22/2;
+//led_radius_outer=85.5/2;
+//led_radius=(led_radius_inner+led_radius_outer)/2;
+//led_width=(led_radius_outer-led_radius_inner);
+//led_side=6;
+//led_count=24;
+//led_angle_shift=0;
+//led_circle_grid=0;
+
 // General settings
 grid_wall=1;
 grid_height=5;
@@ -72,13 +97,21 @@ layer_stencil(list_esp_cat_16);
 // Grid (choose either a 3D model or a 2D model to laser cut)
 //layer_grid_3D();
 //layer_grid_2D();
+//linear_extrude(4)
+//layer_grid_circle();
 
 // Layer to hold the PCB matrix layer in place (only for v2)
 //layer_matrix();
+//translate([0,0,2.5])
+//linear_extrude(2.5)
+//layer_matrix_circle();
 
 // Matrix support layer, with cutouts for the cables, choose either version 1 or 2
 //layer_support_v1();
 //layer_support_v2();
+//translate([0,0,2.5])
+//linear_extrude(2.5)
+//layer_support_circle();
 
 // Hollow layer
 //layer_hollow();
@@ -87,7 +120,27 @@ layer_stencil(list_esp_cat_16);
 //layer_back_v1();
 //layer_back_v2();
 
+// demo
+//linear_extrude(4)
+//    sonometre();
+//translate([0,0,-12])
+//    linear_extrude(12)
+//        layer_hollow();
+//translate([0,0,-16])
+//    linear_extrude(4)
+//        layer_back_v2();
+
 //-----------------------------------
+
+module sonometre() {
+    difference() {
+        layer_grid_circle();
+        translate([50,60])
+            circle(5, $fn=50);    
+        translate([50,40])
+            circle(5, $fn=50);    
+    }
+}
 
 module base(size, step, chamfer, hole) {
     size = (size+2)*step;
@@ -144,6 +197,41 @@ module subgrid(size, step, wall) {
     }
 }
 
+module layer_grid_circle() {
+
+    difference() {
+        base(grid_size, grid_step, chamfer_size, hole_size);
+        offset = (grid_size+2)*grid_step/2;
+        translate([offset,offset]) {
+            for (i=[0:led_count]) {
+                rotate(360 * (i+led_angle_shift)/led_count)
+                    translate([0, led_radius])
+                        square([led_side, led_side], true);
+            }
+        }
+        if (led_circle_grid)        
+            translate([50,50])
+                grid(8, 8, 1);
+    }
+}
+    
+module layer_matrix_circle() {
+
+    difference() {
+        base(grid_size, grid_step, chamfer_size, hole_size);
+        offset = (grid_size+2)*grid_step/2;
+        translate([offset,offset]) {
+            difference() {
+                circle(led_radius_outer, $fn=100);
+                circle(led_radius_inner, $fn=100);
+            }
+        }
+        if (led_circle_grid)
+            translate([58,58])
+                square([64,64]);
+    }
+}
+
 module layer_grid_2D()  {
         difference() {
             base(grid_size, grid_step, chamfer_size, hole_size);
@@ -190,8 +278,35 @@ module layer_support_v2() {
     difference() {
         base(grid_size, grid_step, chamfer_size, hole_size);
         translate([grid_step*1.5,grid_step*8 + 1,0]) {
-                square([1.5*(grid_step-grid_wall),grid_wall*4], true);
+            square([1.5*(grid_step-grid_wall),grid_wall*4], true);
         }
+        translate([grid_step*8.5,grid_step*2 - 1,0]) {
+            square([1.5*(grid_step-grid_wall),grid_wall*4], true);
+        }
+    }
+}
+
+module layer_support_circle() {
+    difference() {
+        base(grid_size, grid_step, chamfer_size, hole_size);
+        offset = (grid_size+2)*grid_step/2;
+        shift = 360*(0.5-led_angle_shift)/led_count;
+        translate([offset,offset]) {
+            for (i=[0:3]) {
+                rotate(90*i-shift)
+                    translate([0, led_radius])
+                        square([led_width*2,led_width], true);
+            }
+        }
+        if (led_circle_grid)
+            translate([64, 64]) {
+                translate([8*0,8*6]) {
+                    square([1.75*(8-1),1*4], false);
+                }
+                translate([8*5,8*0,0]) {
+                    square([1.75*(8-1),1*4], false);
+                }
+            }
     }
 }
 
