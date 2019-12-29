@@ -20,18 +20,11 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
 #include "config/all.h"
-#include <EEPROM.h>
 #include <Wire.h>
 
 // -----------------------------------------------------------------------------
 // METHODS
 // -----------------------------------------------------------------------------
-
-String getIdentifier() {
-    char identifier[20];
-    sprintf(identifier, "%s_%06X", DEVICE, ESP.getChipId());
-    return String(identifier);
-}
 
 void heartbeat() {
 
@@ -43,7 +36,6 @@ void heartbeat() {
     unsigned long uptime_seconds = uptime_overflows * (UPTIME_OVERFLOW / 1000) + (last_uptime / 1000);
     unsigned int free_heap = ESP.getFreeHeap();
 
-    DEBUG_MSG_P(PSTR("[MAIN] Time: %s\n"), (char *) NTP.getTimeDateString().c_str());
     DEBUG_MSG_P(PSTR("[MAIN] Uptime: %ld seconds\n"), uptime_seconds);
     DEBUG_MSG_P(PSTR("[MAIN] Free heap: %d bytes\n"), free_heap);
     #if ENABLE_ADC_VCC
@@ -88,7 +80,6 @@ void heartbeat() {
 }
 
 void hardwareSetup() {
-    EEPROM.begin(4096);
     Serial.begin(SERIAL_BAUDRATE);
     Wire.begin(SDA_PIN, SCL_PIN);
 }
@@ -129,6 +120,7 @@ void setup() {
     hardwareSetup();
     welcome();
 
+    eepromSetup();
     settingsSetup();
     if (getSetting("hostname").length() == 0) {
         setSetting("hostname", getIdentifier());
@@ -146,6 +138,7 @@ void setup() {
 
     wifiSetup();
     otaSetup();
+    terminalSetup();
     #if ENABLE_MDNS
     mdnsServerSetup();
     #endif
@@ -182,6 +175,7 @@ void setup() {
 
 void loop() {
 
+    eepromLoop();
     hardwareLoop();
     buttonLoop();
     wifiLoop();
@@ -190,8 +184,8 @@ void loop() {
     mqttLoop();
     #endif
     ntpLoop();
-    settingsLoop();
-
+    terminalLoop();
+    
     driverLoop();
 
     // Clock code

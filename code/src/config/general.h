@@ -72,12 +72,19 @@
 #define DEBUG_UDP_IP            IPAddress(192, 168, 1, 100)
 #define DEBUG_UDP_PORT          8113
 
-//--------------------------------------------------------------------------------
+//------------------------------------------------------------------------------
 // EEPROM
-//--------------------------------------------------------------------------------
+//------------------------------------------------------------------------------
+
+#define EEPROM_SIZE             SPI_FLASH_SEC_SIZE  // EEPROM size in bytes (1 sector = 4096 bytes)
+
+//#define EEPROM_RORATE_SECTORS   2             // Number of sectors to use for EEPROM rotation
+                                                // If not defined the firmware will use a number based
+                                                // on the number of available sectors
 
 #define EEPROM_DRIVER           0
-#define EEPROM_DATA_END         1
+#define EEPROM_ROTATE_DATA      1               // Reserved for the EEPROM_ROTATE library (3 bytes)
+#define EEPROM_DATA_END         4               // End of custom EEPROM data block
 
 //--------------------------------------------------------------------------------
 // I2C
@@ -242,3 +249,13 @@
 #define NTP_TIME_OFFSET         1
 #define NTP_DAY_LIGHT           true
 #define NTP_UPDATE_INTERVAL     1800
+
+//------------------------------------------------------------------------------
+// TERMINAL
+//------------------------------------------------------------------------------
+
+#ifndef TERMINAL_SUPPORT
+#define TERMINAL_SUPPORT         1              // Enable terminal commands (0.97Kb)
+#endif
+
+#define TERMINAL_BUFFER_SIZE     128            // Max size for commands commands

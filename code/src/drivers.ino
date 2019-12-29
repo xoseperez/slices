@@ -6,7 +6,6 @@ Copyright (C) 2017 by Xose Pérez <xose dot perez at gmail dot com>
 
 */
 
-#include <EEPROM.h>
 #include <vector>
 typedef struct {
     char * name;
@@ -22,7 +21,7 @@ unsigned char _currentDriver = 0;
 // -----------------------------------------------------------------------------
 
 void driverSetup() {
-    unsigned char driver = EEPROM.read(EEPROM_DRIVER);
+    unsigned char driver = EEPROMr.read(EEPROM_DRIVER);
     driverSet(driver);
 }
 
@@ -75,8 +74,8 @@ void driverSet(unsigned char i) {
         _currentDriver = i;
         driverStart();
         DEBUG_MSG_P(PSTR("[DRIVER] Set to '%s'\n"), _drivers[_currentDriver].name);
-        EEPROM.write(EEPROM_DRIVER, _currentDriver);
-        EEPROM.commit();
+        EEPROMr.write(EEPROM_DRIVER, _currentDriver);
+        EEPROMr.commit();
     }
 }
 

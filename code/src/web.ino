@@ -22,7 +22,6 @@ Copyright (C) 2016-2017 by Xose Pérez <xose dot perez at gmail dot com>
 
 AsyncWebServer * _server;
 AsyncWebSocket ws("/ws");
-Ticker deferred;
 char _last_modified[50];
 
 typedef struct {
@@ -91,9 +90,7 @@ void _wsParse(uint32_t client_id, uint8_t * payload, size_t length) {
                 return;
             }
 
-            for (unsigned int i = 0; i < SPI_FLASH_SEC_SIZE; i++) {
-                EEPROM.write(i, 0xFF);
-            }
+            resetSettings();
 
             for (auto element : data) {
                 if (strcmp(element.key, "app") == 0) continue;
@@ -499,9 +496,7 @@ void _onUpgrade(AsyncWebServerRequest *request) {
     AsyncWebServerResponse *response = request->beginResponse(200, "text/plain", Update.hasError() ? "FAIL" : "OK");
     response->addHeader("Connection", "close");
     if (!Update.hasError()) {
-        deferred.once_ms(100, []() {
-            ESP.restart();
-        });
+        deferredReset(100);
     }
     request->send(response);
 }

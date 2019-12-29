@@ -38,13 +38,13 @@ void rtcSetup() {
     }
 
     DEBUG_MSG_P(
-        PSTR("[RTC] Time: %04u/%02u/%02u %02u:%02u:%02u\n"),
-        now.Year(),
-        now.Month(),
-        now.Day(),
+        PSTR("[RTC] Time: %02u:%02u:%02u %02u/%02u/%04u\n"),
         now.Hour(),
         now.Minute(),
-        now.Second()
+        now.Second(),
+        now.Day(),
+        now.Month(),
+        now.Year()
     );
 
 }

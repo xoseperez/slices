@@ -55,7 +55,7 @@ void buttonEvent(unsigned int id, unsigned char event) {
     // Long long click resets to factory settings
     if (event == BUTTON_EVENT_LNGLNGCLICK) {
         DEBUG_MSG_P(PSTR("\n\nFACTORY RESET\n\n"));
-        settingsFactoryReset();
+        resetSettings();
         ESP.restart();
     }
 
