@@ -6,6 +6,8 @@ Copyright (C) 2016-2017 by Xose Pérez <xose dot perez at gmail dot com>
 
 */
 
+#if ENABLE_WEB
+
 #include <ESPAsyncTCP.h>
 #include <ESPAsyncWebServer.h>
 #include <ESP8266mDNS.h>
@@ -33,14 +35,14 @@ ws_ticket_t _ticket[WS_BUFFER_SIZE];
 // WEBSOCKETS
 // -----------------------------------------------------------------------------
 
-bool wsSend(const char * payload) {
+void wsSend(const char * payload) {
     if (ws.count() > 0) {
         DEBUG_MSG_P(PSTR("[WEBSOCKET] Broadcasting '%s'\n"), payload);
         ws.textAll(payload);
     }
 }
 
-bool wsSend(uint32_t client_id, const char * payload) {
+void wsSend(uint32_t client_id, const char * payload) {
     DEBUG_MSG_P(PSTR("[WEBSOCKET] Sending '%s' to #%ld\n"), payload, client_id);
     ws.text(client_id, payload);
 }
@@ -120,12 +122,14 @@ void _wsParse(uint32_t client_id, uint8_t * payload, size_t length) {
             }
         }
 
+        #if ENABLE_DRIVER_CANVAS
         if (action.equals("color") && root.containsKey("data")) {
             JsonObject& data = root["data"];
             unsigned char x = data["x"].as<int>();
             unsigned char y = data["y"].as<int>();
             canvasDraw(x, y, data["color"]);
         }
+        #endif
 
     };
 
@@ -216,7 +220,7 @@ void _wsParse(uint32_t client_id, uint8_t * payload, size_t length) {
         if (webMode == WEB_MODE_NORMAL) {
 
             // Clean wifi networks
-            int i = 0;
+            unsigned char i = 0;
             while (i < network) {
                 if (getSetting("ssid" + String(i)).length() == 0) {
                     delSetting("ssid" + String(i));
@@ -315,6 +319,10 @@ void _wsStart(uint32_t client_id) {
         root["mqttUser"] = getSetting("mqttUser");
         root["mqttPassword"] = getSetting("mqttPassword");
         root["mqttTopic"] = getSetting("mqttTopic", MQTT_TOPIC);
+        #endif
+
+        #if ENABLE_DRIVER_CANVAS
+        root["canvasVisible"] = true;
         #endif
 
         root["matrixWidth"] = MATRIX_WIDTH;
@@ -558,3 +566,5 @@ void webSetup() {
     DEBUG_MSG_P(PSTR("[WEBSERVER] Webserver running on port %d\n"), getSetting("webPort", WEBSERVER_PORT).toInt());
 
 }
+
+#endif // ENABLE_WEB

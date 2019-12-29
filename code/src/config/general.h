@@ -2,6 +2,14 @@
 // CONFIGURATION
 //------------------------------------------------------------------------------
 
+#define ENABLE_DRIVER_FIBONACCI         1
+#define ENABLE_DRIVER_BASIC             1
+#define ENABLE_DRIVER_BINARY            1
+#define ENABLE_DRIVER_WORD              1
+#define ENABLE_DRIVER_GAME_OF_LIFE      1
+#define ENABLE_DRIVER_CANVAS            1
+#define ENABLE_DRIVER_CIRCLE            1
+
 #if FIBONACCI
 
     #undef ENABLE_DRIVER_BASIC
@@ -21,28 +29,18 @@
 
 #endif
 
-#ifndef ENABLE_DRIVER_FIBONACCI
-#define ENABLE_DRIVER_FIBONACCI         1
+#if CIRCLE_SIZE > 0
+
+    #undef ENABLE_DRIVER_GAME_OF_LIFE
+    #define ENABLE_DRIVER_GAME_OF_LIFE  0
+
 #endif
 
-#ifndef ENABLE_DRIVER_BASIC
-#define ENABLE_DRIVER_BASIC             1
-#endif
+#if CIRCLE_SIZE == 0
 
-#ifndef ENABLE_DRIVER_BINARY
-#define ENABLE_DRIVER_BINARY            1
-#endif
+    #undef ENABLE_DRIVER_CIRCLE
+    #define ENABLE_DRIVER_CIRCLE        0
 
-#ifndef ENABLE_DRIVER_WORD
-#define ENABLE_DRIVER_WORD              1
-#endif
-
-#ifndef ENABLE_DRIVER_GAME_OF_LIFE
-#define ENABLE_DRIVER_GAME_OF_LIFE      1
-#endif
-
-#ifndef ENABLE_DRIVER_CANVAS
-#define ENABLE_DRIVER_CANVAS            1
 #endif
 
 
@@ -96,31 +94,34 @@
 
 #define MATRIX_8x8                  1
 #define MATRIX_16x16                2
+#define MATRIX_16x8                 3
+
 #ifndef MATRIX_SIZE
 #define MATRIX_SIZE                 MATRIX_8x8
+#endif
+
+#ifndef CIRCLE_SIZE
+#define CIRCLE_SIZE                 0
 #endif
 
 #if MATRIX_SIZE == MATRIX_8x8
 #define MATRIX_WIDTH                8
 #define MATRIX_HEIGHT               8
-#define MATRIX_MODE                 NEO_MATRIX_TOP + NEO_MATRIX_RIGHT + NEO_MATRIX_COLUMNS + NEO_MATRIX_PROGRESSIVE
-#define MATRIX_TYPE                 NEO_GRB + NEO_KHZ800
-#else
+#elif MATRIX_SIZE == MATRIX_16x16
 #define MATRIX_WIDTH                16
 #define MATRIX_HEIGHT               16
-#define MATRIX_MODE                 NEO_MATRIX_TOP + NEO_MATRIX_LEFT + NEO_MATRIX_COLUMNS + NEO_MATRIX_ZIGZAG
-#define MATRIX_TYPE                 NEO_GRB + NEO_KHZ800
+#elif MATRIX_SIZE == MATRIX_16x8
+#define MATRIX_WIDTH                16
+#define MATRIX_HEIGHT               8
 #endif
 
-#define MATRIX_DEFAULT_BRIGHTNESS   40
-#define MATRIX_SCROLL_INTERVAL      75
+#define MATRIX_CHIPSET              WS2812B
+#define MATRIX_COLOR_ORDER          GRB
+#define CIRCLE_START                (MATRIX_HEIGHT * MATRIX_WIDTH)
+#define MATRIX_LEDS                 (MATRIX_WIDTH * MATRIX_HEIGHT + CIRCLE_SIZE)
 
-// Basic colors
-#define MATRIX_RED                  getMatrix()->Color(255,10,10)
-#define MATRIX_GREEN                getMatrix()->Color(10,255,10)
-#define MATRIX_BLUE                 getMatrix()->Color(10,10,255)
-#define MATRIX_GREY                 getMatrix()->Color(64,64,64)
-#define MATRIX_ORANGE               getMatrix()->Color(255,255,10)
+#define MATRIX_DEFAULT_BRIGHTNESS   60
+#define MATRIX_SCROLL_INTERVAL      75
 
 //--------------------------------------------------------------------------------
 // BUTTON
@@ -154,6 +155,8 @@
 #define ADMIN_PASS              "fibonacci"
 #define FORCE_CHANGE_PASS       1
 #define HTTP_USERNAME           "admin"
+
+#define ENABLE_WEB              1
 #define WS_BUFFER_SIZE          5
 #define WS_TIMEOUT              1800000
 #define WEBSERVER_PORT          80
@@ -162,8 +165,6 @@
 
 #define WEB_MODE_NORMAL         0
 #define WEB_MODE_PASSWORD       1
-
-#define AP_MODE                 AP_MODE_ALONE
 
 // -----------------------------------------------------------------------------
 // OTA

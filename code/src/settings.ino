@@ -112,7 +112,7 @@ void settingsSetup() {
     Embedis::command( F("EEPROM"), [](Embedis* e) {
         unsigned long freeEEPROM = SPI_FLASH_SEC_SIZE - settingsSize();
         e->stream->printf("Number of keys: %d\n", settingsKeyCount());
-        e->stream->printf("Free EEPROM: %d bytes (%d%%)\n", freeEEPROM, 100 * freeEEPROM / SPI_FLASH_SEC_SIZE);
+        e->stream->printf("Free EEPROM: %lu bytes (%lu%%)\n", freeEEPROM, 100 * freeEEPROM / SPI_FLASH_SEC_SIZE);
         e->response(Embedis::OK);
     });
 

@@ -44,7 +44,8 @@ bool wifiConnected() {
 bool createAP() {
     jw.disconnect();
     jw.resetReconnectTimeout();
-    return jw.createAP();
+    jw.enableAP(true);
+    return true;
 }
 
 void wifiConfigure() {
@@ -52,7 +53,7 @@ void wifiConfigure() {
     jw.setHostname(getSetting("hostname", HOSTNAME).c_str());
     jw.setSoftAP(getSetting("hostname", HOSTNAME).c_str(), getSetting("adminPass", ADMIN_PASS).c_str());
     jw.setReconnectTimeout(WIFI_RECONNECT_INTERVAL);
-    jw.setAPMode(AP_MODE);
+    jw.enableAPFallback(true);
     jw.cleanNetworks();
 
     int i;
@@ -76,42 +77,165 @@ void wifiConfigure() {
     }
 
     // Scan for best network only if we have more than 1 defined
-    jw.scanNetworks(i>1);
+    jw.enableScan(i>1);
 
 }
 
-void wifiStatus() {
+void wifiDebug(WiFiMode_t modes) {
 
-    if (WiFi.getMode() == WIFI_AP_STA) {
-        DEBUG_MSG_P(PSTR("[WIFI] MODE AP + STA --------------------------------\n"));
-    } else if (WiFi.getMode() == WIFI_AP) {
-        DEBUG_MSG_P(PSTR("[WIFI] MODE AP --------------------------------------\n"));
-    } else if (WiFi.getMode() == WIFI_STA) {
-        DEBUG_MSG_P(PSTR("[WIFI] MODE STA -------------------------------------\n"));
-    } else {
-        DEBUG_MSG_P(PSTR("[WIFI] MODE OFF -------------------------------------\n"));
+    #if DEBUG_SUPPORT
+    bool footer = false;
+
+    if (((modes & WIFI_STA) > 0) && ((WiFi.getMode() & WIFI_STA) > 0)) {
+
+        DEBUG_MSG_P(PSTR("[WIFI] ------------------------------------- MODE STA\n"));
+        DEBUG_MSG_P(PSTR("[WIFI] SSID  %s\n"), WiFi.SSID().c_str());
+        DEBUG_MSG_P(PSTR("[WIFI] IP    %s\n"), WiFi.localIP().toString().c_str());
+        DEBUG_MSG_P(PSTR("[WIFI] MAC   %s\n"), WiFi.macAddress().c_str());
+        DEBUG_MSG_P(PSTR("[WIFI] GW    %s\n"), WiFi.gatewayIP().toString().c_str());
+        DEBUG_MSG_P(PSTR("[WIFI] DNS   %s\n"), WiFi.dnsIP().toString().c_str());
+        DEBUG_MSG_P(PSTR("[WIFI] MASK  %s\n"), WiFi.subnetMask().toString().c_str());
+        DEBUG_MSG_P(PSTR("[WIFI] HOST  http://%s.local\n"), WiFi.hostname().c_str());
+        DEBUG_MSG_P(PSTR("[WIFI] BSSID %s\n"), WiFi.BSSIDstr().c_str());
+        DEBUG_MSG_P(PSTR("[WIFI] CH    %d\n"), WiFi.channel());
+        DEBUG_MSG_P(PSTR("[WIFI] RSSI  %d\n"), WiFi.RSSI());
+        footer = true;
+
+    }
+
+    if (((modes & WIFI_AP) > 0) && ((WiFi.getMode() & WIFI_AP) > 0)) {
+        DEBUG_MSG_P(PSTR("[WIFI] -------------------------------------- MODE AP\n"));
+        DEBUG_MSG_P(PSTR("[WIFI] SSID  %s\n"), _wifiSoftAPSSID().c_str());
+        DEBUG_MSG_P(PSTR("[WIFI] PASS  %s\n"), _wifiSoftAPPSK().c_str());
+        DEBUG_MSG_P(PSTR("[WIFI] IP    %s\n"), WiFi.softAPIP().toString().c_str());
+        DEBUG_MSG_P(PSTR("[WIFI] MAC   %s\n"), WiFi.softAPmacAddress().c_str());
+        footer = true;
+    }
+
+    if (WiFi.getMode() == 0) {
+        DEBUG_MSG_P(PSTR("[WIFI] ------------------------------------- MODE OFF\n"));
         DEBUG_MSG_P(PSTR("[WIFI] No connection\n"));
+        footer = true;
     }
 
-    if ((WiFi.getMode() & WIFI_AP) == WIFI_AP) {
-        DEBUG_MSG_P(PSTR("[WIFI] SSID %s\n"), jw.getAPSSID().c_str());
-        DEBUG_MSG_P(PSTR("[WIFI] PASS %s\n"), getSetting("adminPass", ADMIN_PASS).c_str());
-        DEBUG_MSG_P(PSTR("[WIFI] IP   %s\n"), WiFi.softAPIP().toString().c_str());
-        DEBUG_MSG_P(PSTR("[WIFI] MAC  %s\n"), WiFi.softAPmacAddress().c_str());
+    if (footer) {
+        DEBUG_MSG_P(PSTR("[WIFI] ----------------------------------------------\n"));
+    }
+    #endif //DEBUG_SUPPORT
+
+}
+
+void wifiDebug() {
+    wifiDebug(WIFI_AP_STA);
+}
+
+void _wifiUpdateSoftAP() {
+    if (WiFi.softAPgetStationNum() == 0) {
+        jw.setSoftAP(getSetting("hostname").c_str(), getAdminPass().c_str());
+    }
+}
+
+#ifdef DEBUG_PORT
+
+void _wifiDebugCallback(justwifi_messages_t code, char * parameter) {
+
+    // -------------------------------------------------------------------------
+
+    if (code == MESSAGE_SCANNING) {
+        DEBUG_MSG_P(PSTR("[WIFI] Scanning\n"));
     }
 
-    if ((WiFi.getMode() & WIFI_STA) == WIFI_STA) {
-        DEBUG_MSG_P(PSTR("[WIFI] SSID %s\n"), WiFi.SSID().c_str());
-        DEBUG_MSG_P(PSTR("[WIFI] IP   %s\n"), WiFi.localIP().toString().c_str());
-        DEBUG_MSG_P(PSTR("[WIFI] MAC  %s\n"), WiFi.macAddress().c_str());
-        DEBUG_MSG_P(PSTR("[WIFI] GW   %s\n"), WiFi.gatewayIP().toString().c_str());
-        DEBUG_MSG_P(PSTR("[WIFI] DNS  %s\n"), WiFi.dnsIP().toString().c_str());
-        DEBUG_MSG_P(PSTR("[WIFI] MASK %s\n"), WiFi.subnetMask().toString().c_str());
-        DEBUG_MSG_P(PSTR("[WIFI] HOST %s\n"), WiFi.hostname().c_str());
+    if (code == MESSAGE_SCAN_FAILED) {
+        DEBUG_MSG_P(PSTR("[WIFI] Scan failed\n"));
     }
 
-    DEBUG_MSG_P(PSTR("[WIFI] ----------------------------------------------\n"));
+    if (code == MESSAGE_NO_NETWORKS) {
+        DEBUG_MSG_P(PSTR("[WIFI] No networks found\n"));
+    }
 
+    if (code == MESSAGE_NO_KNOWN_NETWORKS) {
+        DEBUG_MSG_P(PSTR("[WIFI] No known networks found\n"));
+    }
+
+    if (code == MESSAGE_FOUND_NETWORK) {
+        DEBUG_MSG_P(PSTR("[WIFI] %s\n"), parameter);
+    }
+
+    // -------------------------------------------------------------------------
+
+    if (code == MESSAGE_CONNECTING) {
+        DEBUG_MSG_P(PSTR("[WIFI] Connecting to %s\n"), parameter);
+    }
+
+    if (code == MESSAGE_CONNECT_WAITING) {
+        // too much noise
+    }
+
+    if (code == MESSAGE_CONNECT_FAILED) {
+        DEBUG_MSG_P(PSTR("[WIFI] Could not connect to %s\n"), parameter);
+    }
+
+    if (code == MESSAGE_CONNECTED) {
+        wifiDebug(WIFI_STA);
+    }
+
+    if (code == MESSAGE_DISCONNECTED) {
+        DEBUG_MSG_P(PSTR("[WIFI] Disconnected\n"));
+    }
+
+    // -------------------------------------------------------------------------
+
+    if (code == MESSAGE_ACCESSPOINT_CREATING) {
+        DEBUG_MSG_P(PSTR("[WIFI] Creating access point\n"));
+    }
+
+    if (code == MESSAGE_ACCESSPOINT_CREATED) {
+        wifiDebug(WIFI_AP);
+    }
+
+    if (code == MESSAGE_ACCESSPOINT_FAILED) {
+        DEBUG_MSG_P(PSTR("[WIFI] Could not create access point\n"));
+    }
+
+    if (code == MESSAGE_ACCESSPOINT_DESTROYED) {
+        _wifiUpdateSoftAP();
+        DEBUG_MSG_P(PSTR("[WIFI] Access point destroyed\n"));
+    }
+
+    // -------------------------------------------------------------------------
+
+    if (code == MESSAGE_WPS_START) {
+        DEBUG_MSG_P(PSTR("[WIFI] WPS started\n"));
+    }
+
+    if (code == MESSAGE_WPS_SUCCESS) {
+        DEBUG_MSG_P(PSTR("[WIFI] WPS succeded!\n"));
+    }
+
+    if (code == MESSAGE_WPS_ERROR) {
+        DEBUG_MSG_P(PSTR("[WIFI] WPS failed\n"));
+    }
+
+    // ------------------------------------------------------------------------
+
+    if (code == MESSAGE_SMARTCONFIG_START) {
+        DEBUG_MSG_P(PSTR("[WIFI] Smart Config started\n"));
+    }
+
+    if (code == MESSAGE_SMARTCONFIG_SUCCESS) {
+        DEBUG_MSG_P(PSTR("[WIFI] Smart Config succeded!\n"));
+    }
+
+    if (code == MESSAGE_SMARTCONFIG_ERROR) {
+        DEBUG_MSG_P(PSTR("[WIFI] Smart Config failed\n"));
+    }
+
+}
+
+#endif
+
+void wifiRegister(wifi_callback_f callback) {
+    jw.subscribe(callback);
 }
 
 void wifiSetup() {
@@ -120,75 +244,11 @@ void wifiSetup() {
     wifiConfigure();
 
     // Message callbacks
-    jw.onMessage([](justwifi_messages_t code, char * parameter) {
+	#ifdef DEBUG_PORT
+        wifiRegister(_wifiDebugCallback);
+    #endif
 
-		#ifdef DEBUG_PORT
-
-		    if (code == MESSAGE_SCANNING) {
-		        DEBUG_MSG_P(PSTR("[WIFI] Scanning\n"));
-		    }
-
-		    if (code == MESSAGE_SCAN_FAILED) {
-		        DEBUG_MSG_P(PSTR("[WIFI] Scan failed\n"));
-		    }
-
-		    if (code == MESSAGE_NO_NETWORKS) {
-		        DEBUG_MSG_P(PSTR("[WIFI] No networks found\n"));
-		    }
-
-		    if (code == MESSAGE_NO_KNOWN_NETWORKS) {
-		        DEBUG_MSG_P(PSTR("[WIFI] No known networks found\n"));
-		    }
-
-		    if (code == MESSAGE_FOUND_NETWORK) {
-		        DEBUG_MSG_P(PSTR("[WIFI] %s\n"), parameter);
-		    }
-
-		    if (code == MESSAGE_CONNECTING) {
-		        DEBUG_MSG_P(PSTR("[WIFI] Connecting to %s\n"), parameter);
-		    }
-
-		    if (code == MESSAGE_CONNECT_WAITING) {
-		        // too much noise
-		    }
-
-		    if (code == MESSAGE_CONNECT_FAILED) {
-		        DEBUG_MSG_P(PSTR("[WIFI] Could not connect to %s\n"), parameter);
-		    }
-
-		    if (code == MESSAGE_CONNECTED) {
-                wifiStatus();
-		    }
-
-		    if (code == MESSAGE_ACCESSPOINT_CREATED) {
-                wifiStatus();
-		    }
-
-		    if (code == MESSAGE_DISCONNECTED) {
-		        DEBUG_MSG_P(PSTR("[WIFI] Disconnected\n"));
-		    }
-
-		    if (code == MESSAGE_ACCESSPOINT_CREATING) {
-		        DEBUG_MSG_P(PSTR("[WIFI] Creating access point\n"));
-		    }
-
-		    if (code == MESSAGE_ACCESSPOINT_FAILED) {
-		        DEBUG_MSG_P(PSTR("[WIFI] Could not create access point\n"));
-		    }
-
-		#endif
-
-        // Configure mDNS
-        #if ENABLE_MDNS
-    	    if (code == MESSAGE_CONNECTED || code == MESSAGE_ACCESSPOINT_CREATED) {
-                if (MDNS.begin(WiFi.getMode() == WIFI_AP ? APP_NAME : (char *) WiFi.hostname().c_str())) {
-                    MDNS.addService("http", "tcp", 80);
-    	            DEBUG_MSG_P(PSTR("[MDNS] OK\n"));
-    	        } else {
-    	            DEBUG_MSG_P(PSTR("[MDNS] FAIL\n"));
-    	        }
-    	    }
-        #endif
+    wifiRegister([](justwifi_messages_t code, char * parameter) {
 
         // NTP connection reset
         if (code == MESSAGE_CONNECTED) {

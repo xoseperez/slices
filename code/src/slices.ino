@@ -146,6 +146,9 @@ void setup() {
 
     wifiSetup();
     otaSetup();
+    #if ENABLE_MDNS
+    mdnsServerSetup();
+    #endif
     #if ENABLE_MQTT
     mqttSetup();
     #endif
@@ -190,5 +193,10 @@ void loop() {
     settingsLoop();
 
     driverLoop();
+
+    // Clock code
+    #if ENABLE_DRIVER_CIRCLE
+        //circleClockLoop();
+    #endif
 
 }

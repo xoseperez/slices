@@ -35,6 +35,7 @@ uint8_t buttonEventMapping(uint8_t event, uint8_t count, uint16_t length) {
         }
         if (count == 2) return BUTTON_EVENT_DBLCLICK;
     }
+    return BUTTON_EVENT_NONE;
 }
 
 void buttonEvent(unsigned int id, unsigned char event) {

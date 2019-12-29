@@ -1,4 +1,5 @@
 #include "version.h"
+#include "buildtime.h"
 #include "prototypes.h"
 #include "general.h"
 #include "debug.h"

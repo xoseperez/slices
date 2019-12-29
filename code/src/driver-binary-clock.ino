@@ -6,9 +6,9 @@ Copyright (C) 2017 by Xose Pérez <xose dot perez at gmail dot com>
 
 */
 
-#include <Adafruit_NeoMatrix.h>
+#if ENABLE_DRIVER_BINARY
 
-
+#include <FastLED.h>
 
 // -----------------------------------------------------------------------------
 // DRIVER
@@ -16,22 +16,24 @@ Copyright (C) 2017 by Xose Pérez <xose dot perez at gmail dot com>
 
 void binaryClockDraw(byte number, byte column, byte red, byte green, byte blue) {
 
-    Adafruit_NeoMatrix * matrix = getMatrix();
-    unsigned long color_on = matrix->Color(red, green, blue);
-    unsigned long color_off = matrix->Color(red / 4, green / 4, blue / 4);
+    CRGB color_on = CRGB(red, green, blue);
+    CRGB color_off = CRGB(red, green, blue) % 16;
 
     for (byte row=5; row>1; row--) {
-        unsigned long use_color = (number & 1) ? color_on : color_off;
 
-        #if MATRIX_SIZE == MATRIX_8x8
-            matrix->drawPixel(column, row, use_color);
+        CRGB use_color = (number & 1) ? color_on : color_off;
+
+        #if (MATRIX_HEIGHT == 8)
+            matrixSetPixelColor(column, row, use_color);
         #else
-            matrix->drawPixel(column*2, row*2, use_color);
-            matrix->drawPixel(column*2+1, row*2, use_color);
-            matrix->drawPixel(column*2, row*2+1, use_color);
-            matrix->drawPixel(column*2+1, row*2+1, use_color);
+            matrixSetPixelColor(column*2, row*2, use_color);
+            matrixSetPixelColor(column*2+1, row*2, use_color);
+            matrixSetPixelColor(column*2, row*2+1, use_color);
+            matrixSetPixelColor(column*2+1, row*2+1, use_color);
         #endif
+
         number >>= 1;
+
     }
 
 }
@@ -50,22 +52,18 @@ void binaryClockLoop() {
         int currentSecond = now.Second();
 
         // Prepare the display
-        Adafruit_NeoMatrix * matrix = getMatrix();
-        matrix->fillScreen(0);
+        matrixClear();
 
-        binaryClockDraw(currentHour / 10, 0, 255, 0, 0);
-        binaryClockDraw(currentHour % 10, 1, 255, 0, 0);
-        binaryClockDraw(currentMinute / 10, 3, 0, 255, 0);
-        binaryClockDraw(currentMinute % 10, 4, 0, 255, 0);
-        binaryClockDraw(currentSecond / 10, 6, 0, 0, 255);
-        binaryClockDraw(currentSecond % 10, 7, 0, 0, 255);
+        int column_base = (MATRIX_WIDTH == MATRIX_HEIGHT) ? 0 : (MATRIX_WIDTH / 2 - 4);
+
+        binaryClockDraw(currentHour / 10, 0 + column_base, 255, 0, 0);
+        binaryClockDraw(currentHour % 10, 1 + column_base, 255, 0, 0);
+        binaryClockDraw(currentMinute / 10, 3 + column_base, 0, 255, 0);
+        binaryClockDraw(currentMinute % 10, 4 + column_base, 0, 255, 0);
+        binaryClockDraw(currentSecond / 10, 6 + column_base, 0, 0, 255);
+        binaryClockDraw(currentSecond % 10, 7 + column_base, 0, 0, 255);
 
         matrixRefresh();
-
-        DEBUG_MSG_P("%ld\n", matrix->Color(255,0,0));
-        DEBUG_MSG_P("%ld\n", matrix->Color(0,255,0));
-        DEBUG_MSG_P("%ld\n", matrix->Color(0,0,255));
-        DEBUG_MSG_P("%ld\n", matrix->Color(0,0,0));
 
     }
 
@@ -74,3 +72,5 @@ void binaryClockLoop() {
 void binaryClockSetup() {
     driverRegister("binary-clock", NULL, binaryClockLoop, NULL);
 }
+
+#endif

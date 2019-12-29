@@ -10,7 +10,7 @@ Copyright (C) 2016 by Xose Pérez <xose at tarpunacoop dot org>
 // SOUND
 // -----------------------------------------------------------------------------
 
-void sound(unsigned long frequency, unsigned long duration) {
+void sound(unsigned int frequency, unsigned long duration) {
     tone(BUZZER_PIN, frequency, duration);
 }
 

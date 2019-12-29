@@ -6,7 +6,9 @@ Copyright (C) 2017 by Xose Pérez <xose dot perez at gmail dot com>
 
 */
 
-#include <Adafruit_NeoMatrix.h>
+#if ENABLE_DRIVER_BASIC
+
+#include <FastLED_GFX.h>
 
 int basicClockPrevious = 99;
 
@@ -14,20 +16,7 @@ int basicClockPrevious = 99;
 // DRIVER
 // -----------------------------------------------------------------------------
 
-#if MATRIX_SIZE == MATRIX_8x8
-
-void basicClockStart() {
-    RtcDateTime now = rtcGet();
-    char buffer[6];
-    snprintf(buffer, 6, "%02u:%02u", now.Hour(), now.Minute());
-    matrixScroll(0, buffer, true, basicClockStart);
-}
-
-void basicClockSetup() {
-    driverRegister("Basic clock", basicClockStart, NULL, NULL);
-}
-
-#else
+#if MATRIX_SIZE == MATRIX_16x16
 
 void basicClockLoop() {
 
@@ -56,5 +45,20 @@ void basicClockSetup() {
         NULL
     );
 }
+
+#else
+
+void basicClockStart() {
+    RtcDateTime now = rtcGet();
+    char buffer[6];
+    snprintf(buffer, 6, "%02u:%02u", now.Hour(), now.Minute());
+    matrixScroll(0, buffer, true, basicClockStart);
+}
+
+void basicClockSetup() {
+    driverRegister("Basic clock", basicClockStart, NULL, NULL);
+}
+
+#endif
 
 #endif

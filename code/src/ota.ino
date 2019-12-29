@@ -36,22 +36,29 @@ void otaSetup() {
 
     ArduinoOTA.onProgress([](unsigned int progress, unsigned int total) {
 
-        Adafruit_NeoMatrix * matrix = getMatrix();
-        unsigned long color = MATRIX_GREEN;
         #ifdef FIBONACCI
             long num = MATRIX_WIDTH * progress / total;
             for (unsigned char x=0; x<MATRIX_WIDTH; x++) {
-                if (num-- > 0) matrix->drawPixel(x, MATRIX_HEIGHT-1, color);
+                if (num-- > 0) matrixSetPixelColor(x, MATRIX_HEIGHT-1, CRGB::Green);
             }
+
+        #elif CIRCLE_SIZE > 0
+            long num = CIRCLE_SIZE * progress / total;
+            for (unsigned char i=0; i<CIRCLE_SIZE; i++) {
+                if (num-- > 0) matrixSetPixelColor(CIRCLE_START + i, CRGB::Green);
+            }
+
         #else
             long num = MATRIX_WIDTH * MATRIX_HEIGHT * progress / total;
             for (unsigned char y=0; y<MATRIX_HEIGHT; y++) {
                 for (unsigned char x=0; x<MATRIX_WIDTH; x++) {
-                    if (num-- > 0) matrix->drawPixel(x, MATRIX_HEIGHT-y-1, color);
+                    if (num-- > 0) matrixSetPixelColor(x, MATRIX_HEIGHT-y-1, CRGB::Green);
                 }
             }
+
         #endif
-        matrix->show();
+
+        matrixRefresh();
 
         DEBUG_MSG_P(PSTR("[OTA] Progress: %u%%\r"), (progress / (total / 100)));
 
