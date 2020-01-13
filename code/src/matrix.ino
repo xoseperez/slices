@@ -76,21 +76,10 @@ void matrixLoop() {
 
 }
 
-void matrixRefresh(bool show_wifi_status) {
+void matrixRefresh(bool show_state) {
 
-    if (show_wifi_status) {
-        if (!wifiConnected()) {
-            if (WiFi.getMode() == WIFI_AP) {
-                _matrix->drawPixel(0, MATRIX_HEIGHT - 1, CRGB::Blue);
-            } else {
-                _matrix->drawPixel(0, MATRIX_HEIGHT - 1, CRGB::Red);
-            }
-        } else if (!ntpConnected()) {
-            _matrix->drawPixel(0, MATRIX_HEIGHT - 1, CRGB::Orange);
-        } else {
-            _matrix->drawPixel(0, MATRIX_HEIGHT - 1, CRGB::Black);
-        }
-    }
+    // Show current state on display
+    if (show_state) stateShow();
 
     // Clock code
     #if ENABLE_DRIVER_CIRCLE

@@ -79,6 +79,10 @@ void driverSet(unsigned char i) {
     }
 }
 
+unsigned char driverCount() {
+    return _drivers.size();
+} 
+
 void driverNext() {
     unsigned char nextDriver = (_currentDriver + 1) % _drivers.size();
     driverSet(nextDriver);

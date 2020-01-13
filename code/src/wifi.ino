@@ -12,6 +12,30 @@ Copyright (C) 2016-2017 by Xose Pérez <xose dot perez at gmail dot com>
 // WIFI
 // -----------------------------------------------------------------------------
 
+String _wifiSoftAPSSID() {
+    struct softap_config config;
+    wifi_softap_get_config(&config);
+
+    char* name = reinterpret_cast<char*>(config.ssid);
+    char ssid[sizeof(config.ssid) + 1];
+    memcpy(ssid, name, sizeof(config.ssid));
+    ssid[sizeof(config.ssid)] = '\0';
+
+    return String(ssid);
+}
+
+String _wifiSoftAPPSK() {
+    struct softap_config config;
+    wifi_softap_get_config(&config);
+
+    char* pass = reinterpret_cast<char*>(config.password);
+    char psk[sizeof(config.password) + 1];
+    memcpy(psk, pass, sizeof(config.password));
+    psk[sizeof(config.password)] = '\0';
+
+    return String(psk);
+}
+
 String getIP() {
     if (WiFi.getMode() == WIFI_AP) {
         return WiFi.softAPIP().toString();
@@ -83,7 +107,7 @@ void wifiConfigure() {
 
 void wifiDebug(WiFiMode_t modes) {
 
-    #if DEBUG_SUPPORT
+    #ifdef DEBUG_PORT
     bool footer = false;
 
     if (((modes & WIFI_STA) > 0) && ((WiFi.getMode() & WIFI_STA) > 0)) {
@@ -121,7 +145,7 @@ void wifiDebug(WiFiMode_t modes) {
     if (footer) {
         DEBUG_MSG_P(PSTR("[WIFI] ----------------------------------------------\n"));
     }
-    #endif //DEBUG_SUPPORT
+    #endif //DEBUG_PORT
 
 }
 
@@ -165,6 +189,7 @@ void _wifiDebugCallback(justwifi_messages_t code, char * parameter) {
 
     if (code == MESSAGE_CONNECTING) {
         DEBUG_MSG_P(PSTR("[WIFI] Connecting to %s\n"), parameter);
+        stateSet(STATE_CONNECTING);
     }
 
     if (code == MESSAGE_CONNECT_WAITING) {
@@ -173,14 +198,17 @@ void _wifiDebugCallback(justwifi_messages_t code, char * parameter) {
 
     if (code == MESSAGE_CONNECT_FAILED) {
         DEBUG_MSG_P(PSTR("[WIFI] Could not connect to %s\n"), parameter);
+        stateSet(STATE_ERROR);
     }
 
     if (code == MESSAGE_CONNECTED) {
         wifiDebug(WIFI_STA);
+        stateSet(STATE_CONNECTED);
     }
 
     if (code == MESSAGE_DISCONNECTED) {
         DEBUG_MSG_P(PSTR("[WIFI] Disconnected\n"));
+        stateSet(STATE_ERROR);
     }
 
     // -------------------------------------------------------------------------
@@ -191,6 +219,7 @@ void _wifiDebugCallback(justwifi_messages_t code, char * parameter) {
 
     if (code == MESSAGE_ACCESSPOINT_CREATED) {
         wifiDebug(WIFI_AP);
+        stateSet(STATE_AP);
     }
 
     if (code == MESSAGE_ACCESSPOINT_FAILED) {
@@ -206,6 +235,7 @@ void _wifiDebugCallback(justwifi_messages_t code, char * parameter) {
 
     if (code == MESSAGE_WPS_START) {
         DEBUG_MSG_P(PSTR("[WIFI] WPS started\n"));
+        stateSet(STATE_WPS);
     }
 
     if (code == MESSAGE_WPS_SUCCESS) {
@@ -220,6 +250,7 @@ void _wifiDebugCallback(justwifi_messages_t code, char * parameter) {
 
     if (code == MESSAGE_SMARTCONFIG_START) {
         DEBUG_MSG_P(PSTR("[WIFI] Smart Config started\n"));
+        stateSet(STATE_WPS);
     }
 
     if (code == MESSAGE_SMARTCONFIG_SUCCESS) {
@@ -261,6 +292,11 @@ void wifiSetup() {
         }
 
     });
+
+    // Enter WPS if button is pressed on boot
+    if (buttonState(0)) {
+        jw.startWPS();
+    }
 
 }
 

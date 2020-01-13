@@ -41,22 +41,37 @@ uint8_t buttonEventMapping(uint8_t event, uint8_t count, uint16_t length) {
 void buttonEvent(unsigned int id, unsigned char event) {
 
     DEBUG_MSG_P(PSTR("[BUTTON] Pressed #%d, event: %d\n"), id, event);
-    if (event == 0) return;
+    if (BUTTON_EVENT_NONE == event) return;
 
-    // Single click enabled next driver
-    if (event == BUTTON_EVENT_CLICK) driverNext();
+    // Devices with 1 button:
+    //   Click: changes driver if more than one, else nothing
+    //   DblClick: update time options (STA+NTP or AP)
+    //   Long click: WPS
+    //   Long-long click: nothing
 
-    // Double click opens AP
-    if (event == BUTTON_EVENT_DBLCLICK) createAP();
+    // Device with 4 buttons:
+    // TODO
 
-    // Long click restarts board
-    if (event == BUTTON_EVENT_LNGCLICK) ESP.restart();
+    // TODO: handle device with more than 1 button
+    if (0 == id) {
 
-    // Long long click resets to factory settings
-    if (event == BUTTON_EVENT_LNGLNGCLICK) {
-        DEBUG_MSG_P(PSTR("\n\nFACTORY RESET\n\n"));
-        resetSettings();
-        ESP.restart();
+        // Single click enabled next driver
+        if (BUTTON_EVENT_CLICK == event) {
+            if (driverCount() > 1) driverNext();
+        }
+
+        // Double click opens AP
+        if (BUTTON_EVENT_DBLCLICK == event) {
+            // TODO
+        }
+
+        // Long click restarts board
+        if (BUTTON_EVENT_LNGCLICK == event) {
+            // TODO
+        }
+
+    } else {
+        // TODO
     }
 
 }
