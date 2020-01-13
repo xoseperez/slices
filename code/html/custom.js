@@ -9,6 +9,8 @@ var matrixHeight = 8;
 var matrixStep;
 var drawingColor = "#ffffff";
 
+var timer;
+
 // http://www.the-art-of-web.com/javascript/validate-password/
 function checkPassword(str) {
     // at least one number, one lowercase and one uppercase letter
@@ -34,6 +36,18 @@ function validateForm(form) {
 
     return true;
 
+}
+
+function updateTime() {
+    var d = new Date();
+    var value =
+        zeroPad(d.getDate(), 2) + "/" +
+        zeroPad(d.getMonth() + 1, 2) + "/" +
+        zeroPad(d.getFullYear(), 4) + " " +
+        zeroPad(d.getHours(), 2) + ":" +
+        zeroPad(d.getMinutes(), 2) + ":" +
+        zeroPad(d.getSeconds(), 2);
+    $("input[name='timeNow']").val(value);
 }
 
 function doUpdate() {
@@ -454,8 +468,8 @@ function init() {
     $(".button-update-password").on('click', doUpdatePassword);
     $(".button-reset").on('click', doReset);
     $(".button-reconnect").on('click', doReconnect);
-    $(".button-settings-backup").on('click', backupSettings);
-    $(".button-settings-restore").on('click', restoreSettings);
+    //$(".button-settings-backup").on('click', backupSettings);
+    //$(".button-settings-restore").on('click', restoreSettings);
     $('#uploader').on('change', onFileUpload);
     $(".button-upgrade").on('click', doUpgrade);
     $(".button-clear-canvas").on('click', doCanvas);
@@ -489,6 +503,8 @@ function init() {
     }).fail(function(){
         $("#credentials").show();
     });
+
+    timer = setInterval(updateTime, 1000);
 
 }
 

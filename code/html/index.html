@@ -4,14 +4,14 @@
 
         <title>Slices 0.0.0</title>
         <meta charset="utf-8" />
-        <!-- shortcut::html/favicon.ico -->
+        <!-- shortcut::html/images/favicon.ico -->
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
         <!-- build:css style.css -->
-        <link rel="stylesheet" href="pure-min.css" />
-        <link rel="stylesheet" href="side-menu.css" />
-        <link rel="stylesheet" href="grids-responsive-min.css" />
-        <link rel="stylesheet" href="wheelcolorpicker.css" />
+        <link rel="stylesheet" href="vendor/pure-min.css" />
+        <link rel="stylesheet" href="vendor/side-menu.css" />
+        <link rel="stylesheet" href="vendor/grids-responsive-min.css" />
+        <link rel="stylesheet" href="vendor/wheelcolorpicker.css" />
         <link rel="stylesheet" href="custom.css" />
         <!-- endbuild -->
 
@@ -135,6 +135,21 @@
                             <fieldset>
 
                                 <div class="pure-g">
+                                    <label class="pure-u-1 pure-u-lg-1-4">Online sync</label>
+                                    <select name="onlineSync" class="pure-u-1 pure-u-lg-3-4" tabindex="0">
+                                        <option value="0">Connected permanently</option>
+                                        <option value="1">Connect to update time, then disconnect</option>
+                                        <option value="3">Only manual (no WiFi)</option>
+                                    </select>
+                                    <div class="pure-u-0 pure-u-lg-1-4"></div>
+                                </div>
+
+                                <div class="pure-g">
+                                    <label class="pure-u-1 pure-u-sm-1-4" for="manufacturer">Current time</label>
+                                    <input class="pure-u-1 pure-u-sm-1-2" type="text" name="timeNow" readonly />
+                                </div>
+
+                                <div class="pure-g">
                                     <label class="pure-u-1 pure-u-sm-1-4" for="manufacturer">Manufacturer</label>
                                     <input class="pure-u-1 pure-u-sm-3-4" type="text" name="manufacturer" readonly />
                                 </div>
@@ -142,11 +157,6 @@
                                 <div class="pure-g">
                                     <label class="pure-u-1 pure-u-sm-1-4" for="device">Device</label>
                                     <input class="pure-u-1 pure-u-sm-3-4" type="text" name="device" readonly />
-                                </div>
-
-                                <div class="pure-g">
-                                    <label class="pure-u-1 pure-u-sm-1-4" for="chipid">Chip ID</label>
-                                    <input class="pure-u-1 pure-u-sm-3-4" type="text" name="chipid" readonly />
                                 </div>
 
                                 <div class="pure-g">
@@ -221,11 +231,13 @@
                                     </div>
                                 </div>
 
+                                <!--
                                 <div class="pure-g">
                                     <label class="pure-u-1 pure-u-sm-1-4">Settings</label>
                                     <div class="pure-u-1 pure-u-sm-1-8"><button class="pure-button button-settings-backup pure-u-23-24">Backup</button></div>
                                     <div class="pure-u-1 pure-u-sm-1-8"><button class="pure-button button-settings-restore pure-u-23-24">Restore</button></div>
                                 </div>
+                                -->
 
                                 <div class="pure-g">
                                     <label class="pure-u-1 pure-u-md-1-4">Upgrade</label>
@@ -384,8 +396,8 @@
     </body>
 
     <!-- build:js script.js -->
-    <script src="jquery-1.12.3.min.js"></script>
-    <script src="jquery.wheelcolorpicker-3.0.2.min.js"></script>
+    <script src="vendor/jquery-1.12.3.min.js"></script>
+    <script src="vendor/jquery.wheelcolorpicker-3.0.2.min.js"></script>
     <script src="custom.js"></script>
     <!-- endbuild -->
 
