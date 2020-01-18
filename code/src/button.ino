@@ -46,33 +46,39 @@ void buttonEvent(unsigned int id, unsigned char event) {
     // Devices with 1 button:
     //   Click: changes driver if more than one, else nothing
     //   DblClick: update time options (STA+NTP or AP)
-    //   Long click: WPS
-    //   Long-long click: nothing
-
-    // Device with 4 buttons:
-    // TODO
-
-    // TODO: handle device with more than 1 button
-    if (0 == id) {
+    //   Long click: nothing
+    //   Long-long click: factory reset & resets the board
+    #ifndef BUTTON2_PIN
 
         // Single click enabled next driver
         if (BUTTON_EVENT_CLICK == event) {
-            if (driverCount() > 1) driverNext();
+            if (driverCount() > 1) {
+                driverNext();
+            } else {
+                // nothing
+            }
         }
 
-        // Double click opens AP
+        // Double click updates time (STA+NTP or AP)
         if (BUTTON_EVENT_DBLCLICK == event) {
-            // TODO
+            
         }
 
-        // Long click restarts board
+        // Long click does nothing
         if (BUTTON_EVENT_LNGCLICK == event) {
-            // TODO
+            // nothing
         }
 
-    } else {
-        // TODO
-    }
+        // Long-long click init WPS
+        if (BUTTON_EVENT_LNGLNGCLICK == event) {
+            resetSettings();
+            deferredReset(100);
+        }
+
+    #endif
+
+    // Device with 4 buttons:
+    // TODO: handle device with more than 1 button
 
 }
 
@@ -100,6 +106,7 @@ void buttonSetup() {
     #endif
 
     DEBUG_MSG_P(PSTR("[BUTTON] Number of buttons: %d\n"), _buttons.size());
+    buttonLoop();
 
 }
 

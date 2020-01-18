@@ -51,9 +51,6 @@ String getNetwork() {
 }
 
 void wifiDisconnect() {
-    #if ENABLE_POW
-        powEnable(false);
-    #endif
     jw.disconnect();
 }
 
@@ -69,6 +66,23 @@ bool createAP() {
     jw.disconnect();
     jw.resetReconnectTimeout();
     jw.enableAP(true);
+    return true;
+}
+
+bool startWPS() {
+    WiFi.disconnect();
+    jw.startWPS();
+    return true;
+}
+
+bool wifiOff() {
+    jw.turnOff();
+    return true;
+}
+
+bool wifiOn() {
+    jw.enableAPFallback(true);
+    jw.turnOn();
     return true;
 }
 
@@ -159,6 +173,27 @@ void _wifiUpdateSoftAP() {
     }
 }
 
+void _wifiSave() {
+
+    String ssid = WiFi.SSID();
+    String pass = WiFi.psk();
+
+    // Look for the same SSID
+    uint8_t count = 0;
+    while (count < WIFI_MAX_NETWORKS) {
+        if (!hasSetting("ssid", count)) break;
+        if (ssid.equals(getSetting("ssid", count, ""))) break;
+        count++;
+    }
+
+    // If we have reached the max we overwrite the first one
+    if (WIFI_MAX_NETWORKS == count) count = 0;
+
+    setSetting("ssid", count, ssid);
+    setSetting("pass", count, pass);
+
+}
+
 #ifdef DEBUG_PORT
 
 void _wifiDebugCallback(justwifi_messages_t code, char * parameter) {
@@ -239,6 +274,7 @@ void _wifiDebugCallback(justwifi_messages_t code, char * parameter) {
     }
 
     if (code == MESSAGE_WPS_SUCCESS) {
+        _wifiSave();
         DEBUG_MSG_P(PSTR("[WIFI] WPS succeded!\n"));
     }
 
@@ -254,6 +290,7 @@ void _wifiDebugCallback(justwifi_messages_t code, char * parameter) {
     }
 
     if (code == MESSAGE_SMARTCONFIG_SUCCESS) {
+        _wifiSave();
         DEBUG_MSG_P(PSTR("[WIFI] Smart Config succeded!\n"));
     }
 
@@ -269,6 +306,30 @@ void wifiRegister(wifi_callback_f callback) {
     jw.subscribe(callback);
 }
 
+void _wifiInitCommand() {
+
+    terminalRegisterCommand(F("WIFI"), [](Embedis* e) {
+        wifiDebug();
+        terminalOK();
+    });
+
+    terminalRegisterCommand(F("WIFI.ON"), [](Embedis* e) {
+        wifiOn();
+        terminalOK();
+    });
+
+    terminalRegisterCommand(F("WIFI.OFF"), [](Embedis* e) {
+        wifiOff();
+        terminalOK();
+    });
+
+    terminalRegisterCommand(F("WIFI.WPS"), [](Embedis* e) {
+        startWPS();
+        terminalOK();
+    });
+
+}
+
 void wifiSetup() {
 
     WiFi.persistent(false);
@@ -278,6 +339,9 @@ void wifiSetup() {
 	#ifdef DEBUG_PORT
         wifiRegister(_wifiDebugCallback);
     #endif
+
+    // Terminal
+    _wifiInitCommand();
 
     wifiRegister([](justwifi_messages_t code, char * parameter) {
 
@@ -295,7 +359,7 @@ void wifiSetup() {
 
     // Enter WPS if button is pressed on boot
     if (buttonState(0)) {
-        jw.startWPS();
+        startWPS();
     }
 
 }

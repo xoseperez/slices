@@ -57,6 +57,7 @@
 #define HEARTBEAT_INTERVAL      300000
 #define UPTIME_OVERFLOW         4294967295
 #define ONE_SECOND              1000
+#define SETTINGS_AUTOSAVE       1
 
 //--------------------------------------------------------------------------------
 // DEBUG
@@ -145,8 +146,8 @@
 // BUTTON
 //--------------------------------------------------------------------------------
 
-#define BUTTON1_PIN                 15
-#define BUTTON1_MODE                BUTTON_PUSHBUTTON
+#define BUTTON1_PIN                 16
+#define BUTTON1_MODE                BUTTON_PUSHBUTTON | BUTTON_DEFAULT_HIGH | BUTTON_SET_PULLUP
 
 #define BUTTON_LNGCLICK_LENGTH      1000
 #define BUTTON_LNGLNGCLICK_LENGTH   10000

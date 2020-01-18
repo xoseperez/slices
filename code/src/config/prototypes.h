@@ -14,18 +14,9 @@
 // Core version 2.5.0 introduced EspClass helper method:
 // https://github.com/esp8266/Arduino/commit/0e0e34c614fe8a47544c9998201b1d9b3c24eb18
 extern "C" {
-    #include <cont.h>
-#if defined(ARDUINO_ESP8266_RELEASE_2_3_0) \
-    || defined(ARDUINO_ESP8266_RELEASE_2_4_0) \
-    || defined(ARDUINO_ESP8266_RELEASE_2_4_1)
-    extern cont_t g_cont;
-    #define getFreeStack() cont_get_free_stack(&g_cont)
-#elif defined(ARDUINO_ESP8266_RELEASE_2_4_2)
-    extern cont_t* g_pcont;
-    #define getFreeStack() cont_get_free_stack(g_pcont)
-#else
-    #define getFreeStack() ESP.getFreeContStack()
-#endif
+#include <cont.h>
+extern cont_t* g_pcont;
+#define getFreeStack() cont_get_free_stack(g_pcont)
 }
 
 #include <Ticker.h>
