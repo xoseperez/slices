@@ -34,6 +34,10 @@ ws_ticket_t _ticket[WS_BUFFER_SIZE];
 // WEBSOCKETS
 // -----------------------------------------------------------------------------
 
+uint32_t wsCount() {
+    return ws.count();
+} 
+
 void wsSend(const char * payload) {
     if (ws.count() > 0) {
         DEBUG_MSG_P(PSTR("[WEBSOCKET] Broadcasting '%s'\n"), payload);

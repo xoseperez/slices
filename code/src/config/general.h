@@ -58,6 +58,9 @@
 #define UPTIME_OVERFLOW         4294967295
 #define ONE_SECOND              1000
 #define SETTINGS_AUTOSAVE       1
+#define WIFI_OFF_AFTER          120         // in seconds
+#define WIFI_ON_EVERY           6           // in hours
+#define USE_PASSWORD            0
 
 //--------------------------------------------------------------------------------
 // DEBUG
@@ -147,7 +150,7 @@
 //--------------------------------------------------------------------------------
 
 #define BUTTON1_PIN                 16
-#define BUTTON1_MODE                BUTTON_PUSHBUTTON | BUTTON_DEFAULT_HIGH | BUTTON_SET_PULLUP
+#define BUTTON1_MODE                BUTTON_PUSHBUTTON | BUTTON_DEFAULT_HIGH 
 
 #define BUTTON_LNGCLICK_LENGTH      1000
 #define BUTTON_LNGLNGCLICK_LENGTH   10000

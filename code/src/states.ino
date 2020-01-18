@@ -25,7 +25,7 @@ void stateSet(int state) {
     DEBUG_MSG_P(PSTR("[STATE] State: %d\n"), _state);
 
     _state_ticker.detach();
-    if ((STATE_CONNECTED == state) || (STATE_ERROR == state)) {
+    if (STATE_ERROR == state) {
        _state_ticker.once(5, stateSet, STATE_IDLE);
     }
 

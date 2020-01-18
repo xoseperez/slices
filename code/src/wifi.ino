@@ -7,6 +7,10 @@ Copyright (C) 2016-2017 by Xose Pérez <xose dot perez at gmail dot com>
 */
 
 #include "JustWifi.h"
+#include "Ticker.h"
+
+Ticker _wifi_off_ticker;
+uint8_t _wifi_previous_hour = 25;
 
 // -----------------------------------------------------------------------------
 // WIFI
@@ -76,13 +80,26 @@ bool startWPS() {
 }
 
 bool wifiOff() {
-    jw.turnOff();
+    jw.enableSTA(false);
+    jw.enableAP(false);
+    jw.enableAPFallback(false);
+    jw.disconnect();
     return true;
 }
 
-bool wifiOn() {
-    jw.enableAPFallback(true);
-    jw.turnOn();
+void preOff() {
+    if (wsCount() == 0) {
+        DEBUG_MSG_P(PSTR("[WIFI] Turning WiFi off\n"));
+        wifiOff();
+    } else {
+        DEBUG_MSG_P(PSTR("[WIFI] Keeping WiFi on since there is a client connected\n"));
+        _wifi_off_ticker.once(WIFI_OFF_AFTER, preOff);
+    }
+}
+
+bool wifiOn(bool open_ap) {
+    jw.enableSTA(true);
+    jw.enableAPFallback(open_ap);
     return true;
 }
 
@@ -239,11 +256,12 @@ void _wifiDebugCallback(justwifi_messages_t code, char * parameter) {
     if (code == MESSAGE_CONNECTED) {
         wifiDebug(WIFI_STA);
         stateSet(STATE_CONNECTED);
+        _wifi_off_ticker.once(WIFI_OFF_AFTER, preOff);
     }
 
     if (code == MESSAGE_DISCONNECTED) {
         DEBUG_MSG_P(PSTR("[WIFI] Disconnected\n"));
-        stateSet(STATE_ERROR);
+        stateSet(STATE_IDLE);
     }
 
     // -------------------------------------------------------------------------
@@ -255,15 +273,18 @@ void _wifiDebugCallback(justwifi_messages_t code, char * parameter) {
     if (code == MESSAGE_ACCESSPOINT_CREATED) {
         wifiDebug(WIFI_AP);
         stateSet(STATE_AP);
+        _wifi_off_ticker.once(WIFI_OFF_AFTER, preOff);
     }
 
     if (code == MESSAGE_ACCESSPOINT_FAILED) {
         DEBUG_MSG_P(PSTR("[WIFI] Could not create access point\n"));
+        stateSet(STATE_ERROR);
     }
 
     if (code == MESSAGE_ACCESSPOINT_DESTROYED) {
         _wifiUpdateSoftAP();
         DEBUG_MSG_P(PSTR("[WIFI] Access point destroyed\n"));
+        stateSet(STATE_IDLE);
     }
 
     // -------------------------------------------------------------------------
@@ -314,8 +335,17 @@ void _wifiInitCommand() {
     });
 
     terminalRegisterCommand(F("WIFI.ON"), [](Embedis* e) {
-        wifiOn();
+
+        bool ap_enable = true;
+
+        if (e->argc == 2) {
+            String param = String(e->argv[1]);
+            ap_enable = param.toInt() == 1;
+        }
+
+        wifiOn(ap_enable);
         terminalOK();
+
     });
 
     terminalRegisterCommand(F("WIFI.OFF"), [](Embedis* e) {
@@ -345,9 +375,12 @@ void wifiSetup() {
 
     wifiRegister([](justwifi_messages_t code, char * parameter) {
 
-        // NTP connection reset
+        // NTP connection / disconnection
         if (code == MESSAGE_CONNECTED) {
             ntpConnect();
+        }
+        if (code == MESSAGE_DISCONNECTED) {
+            ntpDisconnect();
         }
 
         // Display notifications
@@ -365,5 +398,14 @@ void wifiSetup() {
 }
 
 void wifiLoop() {
+
     jw.loop();
+
+    // Wake up every X hours
+    RtcDateTime now = rtcGet();
+    int currentHour = now.Hour();
+    if (currentHour == _wifi_previous_hour) return;
+    _wifi_previous_hour = currentHour;
+    if (_wifi_previous_hour % WIFI_ON_EVERY == 0) wifiOn(false);
+
 }

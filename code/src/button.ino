@@ -61,7 +61,7 @@ void buttonEvent(unsigned int id, unsigned char event) {
 
         // Double click updates time (STA+NTP or AP)
         if (BUTTON_EVENT_DBLCLICK == event) {
-            
+            wifiOn(true);
         }
 
         // Long click does nothing

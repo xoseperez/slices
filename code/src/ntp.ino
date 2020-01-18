@@ -17,7 +17,10 @@ bool _ntpConnected = false;
 
 void ntpConnect() {
     NTP.begin(NTP_SERVER, NTP_TIME_OFFSET, NTP_DAY_LIGHT);
-    NTP.setInterval(NTP_UPDATE_INTERVAL);
+}
+
+void ntpDisconnect() {
+    NTP.stop();
 }
 
 bool ntpConnected() {
