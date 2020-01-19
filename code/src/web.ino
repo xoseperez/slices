@@ -389,7 +389,7 @@ bool _authenticate(AsyncWebServerRequest *request) {
         password.toCharArray(httpPassword, password.length() + 1);
         return request->authenticate(HTTP_USERNAME, httpPassword);
     }
-    return false;
+    return true;
 }
 
 void _onAuth(AsyncWebServerRequest *request) {

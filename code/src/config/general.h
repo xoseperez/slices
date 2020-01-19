@@ -1,5 +1,63 @@
+
 //------------------------------------------------------------------------------
-// CONFIGURATION
+// GENERAL
+//------------------------------------------------------------------------------
+
+#define SERIAL_BAUDRATE         115200
+#define DEVICE                  "SLICES"
+#define MANUFACTURER            "TINKERMAN"
+#define HOSTNAME                DEVICE
+#define BUFFER_SIZE             1024
+#define HEARTBEAT_INTERVAL      300000
+#define UPTIME_OVERFLOW         4294967295
+#define ONE_SECOND              1000
+#define SETTINGS_AUTOSAVE       1
+#define USE_PASSWORD            0
+#define SETTINGS_MAX_LIST_COUNT 10
+
+#define WIFI_OFF_AFTER          120         // in seconds
+#define TIME_SYNC_MODE          1           // 0: manual, 1: every, 2: when
+#define TIME_SYNC_EVERY         6           // in hours (can be > 24)
+#define TIME_SYNC_WHEN          20          // at 20:00
+
+//--------------------------------------------------------------------------------
+// DEBUG
+//--------------------------------------------------------------------------------
+
+#ifndef DEBUG_PORT
+#define DEBUG_PORT              Serial
+#endif
+
+// Uncomment and configure these lines to enable remote debug via udpDebug
+// To receive the message son the destination computer use nc:
+// nc -ul 8111
+
+#define DEBUG_UDP_IP            IPAddress(192, 168, 1, 100)
+#define DEBUG_UDP_PORT          8113
+
+//------------------------------------------------------------------------------
+// EEPROM
+//------------------------------------------------------------------------------
+
+#define EEPROM_SIZE             SPI_FLASH_SEC_SIZE  // EEPROM size in bytes (1 sector = 4096 bytes)
+
+//#define EEPROM_RORATE_SECTORS   2             // Number of sectors to use for EEPROM rotation
+                                                // If not defined the firmware will use a number based
+                                                // on the number of available sectors
+
+#define EEPROM_DRIVER           0
+#define EEPROM_ROTATE_DATA      1               // Reserved for the EEPROM_ROTATE library (3 bytes)
+#define EEPROM_DATA_END         4               // End of custom EEPROM data block
+
+//--------------------------------------------------------------------------------
+// I2C
+//--------------------------------------------------------------------------------
+
+#define SDA_PIN                 2
+#define SCL_PIN                 0
+
+//------------------------------------------------------------------------------
+// DRIVERS
 //------------------------------------------------------------------------------
 
 #define ENABLE_DRIVER_FIBONACCI         1
@@ -44,63 +102,6 @@
     #define ENABLE_DRIVER_CIRCLE        0
 
 #endif
-
-//------------------------------------------------------------------------------
-// GENERAL
-//------------------------------------------------------------------------------
-
-#define SERIAL_BAUDRATE         115200
-#define DEVICE                  "SLICES"
-#define MANUFACTURER            "TINKERMAN"
-#define HOSTNAME                DEVICE
-#define BUFFER_SIZE             1024
-#define HEARTBEAT_INTERVAL      300000
-#define UPTIME_OVERFLOW         4294967295
-#define ONE_SECOND              1000
-#define SETTINGS_AUTOSAVE       1
-#define USE_PASSWORD            0
-#define SETTINGS_MAX_LIST_COUNT 10
-
-#define WIFI_OFF_AFTER          120         // in seconds
-#define TIME_SYNC_MODE          0           // 0: every, 1: when, 2: manual
-#define TIME_SYNC_EVERY         6           // in hours (can be > 24)
-#define TIME_SYNC_WHEN          20          // at 20:00
-
-//--------------------------------------------------------------------------------
-// DEBUG
-//--------------------------------------------------------------------------------
-
-#ifndef DEBUG_PORT
-#define DEBUG_PORT              Serial
-#endif
-
-// Uncomment and configure these lines to enable remote debug via udpDebug
-// To receive the message son the destination computer use nc:
-// nc -ul 8111
-
-#define DEBUG_UDP_IP            IPAddress(192, 168, 1, 100)
-#define DEBUG_UDP_PORT          8113
-
-//------------------------------------------------------------------------------
-// EEPROM
-//------------------------------------------------------------------------------
-
-#define EEPROM_SIZE             SPI_FLASH_SEC_SIZE  // EEPROM size in bytes (1 sector = 4096 bytes)
-
-//#define EEPROM_RORATE_SECTORS   2             // Number of sectors to use for EEPROM rotation
-                                                // If not defined the firmware will use a number based
-                                                // on the number of available sectors
-
-#define EEPROM_DRIVER           0
-#define EEPROM_ROTATE_DATA      1               // Reserved for the EEPROM_ROTATE library (3 bytes)
-#define EEPROM_DATA_END         4               // End of custom EEPROM data block
-
-//--------------------------------------------------------------------------------
-// I2C
-//--------------------------------------------------------------------------------
-
-#define SDA_PIN                 2
-#define SCL_PIN                 0
 
 //--------------------------------------------------------------------------------
 // MATRIX

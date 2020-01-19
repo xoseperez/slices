@@ -12,20 +12,8 @@ Copyright (C) 2017-2019 by Xose Pérez <xose dot perez at gmail dot com>
 
 String getIdentifier() {
     char buffer[20];
-    snprintf_P(buffer, sizeof(buffer), PSTR("%s-%06X"), APP_NAME, ESP.getChipId());
+    snprintf_P(buffer, sizeof(buffer), PSTR("%s-%06X"), DEVICE_NAME, ESP.getChipId());
     return String(buffer);
-}
-
-void setDefaultHostname() {
-    if (strlen(HOSTNAME) > 0) {
-        setSetting("hostname", HOSTNAME);
-    } else {
-        setSetting("hostname", getIdentifier());
-    }
-}
-
-void setBoardName() {
-    setSetting("boardName", DEVICE_NAME);
 }
 
 String getBoardName() {
@@ -33,7 +21,7 @@ String getBoardName() {
 }
 
 String getHostName() {
-    return getSetting("hostname", HOSTNAME);
+    return getSetting("hostname", getIdentifier());
 }
 
 String getAdminPass() {

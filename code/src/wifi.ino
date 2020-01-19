@@ -11,6 +11,8 @@ Copyright (C) 2016-2017 by Xose Pérez <xose dot perez at gmail dot com>
 
 Ticker _wifi_off_ticker;
 uint8_t _wifi_previous_hour = 25;
+uint8_t _wifi_sync_mode = 0;
+uint8_t _wifi_hours_left = 0;
 
 // -----------------------------------------------------------------------------
 // WIFI
@@ -104,6 +106,8 @@ bool wifiOn(bool open_ap) {
 }
 
 void wifiConfigure() {
+
+    _wifi_sync_mode = getSetting("timeSync", TIME_SYNC_MODE).toInt();
 
     jw.setHostname(getHostName().c_str());
     if (hasSetting("adminPass")) {
@@ -409,12 +413,27 @@ void wifiLoop() {
 
     jw.loop();
 
-    // Wake up every X hours
+    if (_wifi_sync_mode == 0) return;
+    
+    // checks at sharp hours
     RtcDateTime now = rtcGet();
     int currentHour = now.Hour();
     if (currentHour == _wifi_previous_hour) return;
     _wifi_previous_hour = currentHour;
-    uint8_t timeEvery = getSetting("timeEvery", TIME_SYNC_EVERY).toInt();
-    if (_wifi_previous_hour % timeEvery == 0) wifiOn(false);
+
+    // Check every X hours
+    if (_wifi_sync_mode == 1) {
+        if (_wifi_hours_left == 0) {
+            wifiOn(false);
+            _wifi_hours_left = getSetting("timeEvery", TIME_SYNC_EVERY).toInt();
+        }
+        --_wifi_hours_left;
+
+    // Check at a certain hour
+    } else if (_wifi_sync_mode == 2) {
+        if (currentHour == getSetting("timeWhen", TIME_SYNC_WHEN).toInt()) {
+            wifiOn(false);
+        }
+    }
 
 }

@@ -14,9 +14,7 @@ extern "C" uint32_t _SPIFFS_start;
 extern "C" uint32_t _SPIFFS_end;
 
 String getIdentifier();
-void setDefaultHostname();
 
-void setBoardName();
 String getBoardName();
 String getAdminPass();
 

@@ -353,8 +353,8 @@ function toggleMenu() {
 
 function toggleTimeSync() {
     var value = $('select[name="timeSync"]').val();
-    $('input[name="timeEvery"]').toggle(value == 0);
-    $('select[name="timeWhen"]').toggle(value == 1);
+    $('input[name="timeEvery"]').toggle(value == 1);
+    $('select[name="timeWhen"]').toggle(value == 2);
 }
 
 // ----------------------------------------------------------------------------
