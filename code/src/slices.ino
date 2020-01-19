@@ -132,7 +132,7 @@ void setup() {
     rtcSetup();
     webSetup();
     buttonSetup();
-    soundSetup();
+    //soundSetup();
 
     delay(500);
 
