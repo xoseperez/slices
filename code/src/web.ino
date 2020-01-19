@@ -8,6 +8,7 @@ Copyright (C) 2016-2017 by Xose Pérez <xose dot perez at gmail dot com>
 
 #if ENABLE_WEB
 
+#include <ArduinoJson.h>
 #include <ESPAsyncTCP.h>
 #include <ESPAsyncWebServer.h>
 #include <ESP8266mDNS.h>
@@ -64,6 +65,37 @@ void wsMQTTCallback(unsigned int type, const char * topic, const char * payload)
 }
 #endif
 
+bool _wsStore(const String& key, const String& value) {
+
+    if (value != getSetting(key)) {
+        setSetting(key, value);
+        return true;
+    }
+
+    return false;
+
+}
+
+bool _wsStore(const String& key, JsonArray& value) {
+
+    bool changed = false;
+
+    unsigned char index = 0;
+    for (auto element : value) {
+        if (_wsStore(key + index, element.as<String>())) changed = true;
+        index++;
+    }
+
+    // Delete further values
+    for (unsigned char i=index; i<SETTINGS_MAX_LIST_COUNT; i++) {
+        if (!delSetting(key, index)) break;
+        changed = true;
+    }
+
+    return changed;
+
+}
+
 void _wsParse(uint32_t client_id, uint8_t * payload, size_t length) {
 
     // Parse JSON input
@@ -82,6 +114,11 @@ void _wsParse(uint32_t client_id, uint8_t * payload, size_t length) {
 
         DEBUG_MSG_P(PSTR("[WEBSOCKET] Requested action: %s\n"), action.c_str());
 
+        if (action.equals("time") && root.containsKey("data")) {
+            time_t sync = root["data"];
+            rtcSet(RtcDateTime(year(sync), month(sync), day(sync), hour(sync), minute(sync), second(sync)));
+        }
+        
         if (action.equals("reset")) {
             ESP.restart();
         }
@@ -135,116 +172,47 @@ void _wsParse(uint32_t client_id, uint8_t * payload, size_t length) {
     };
 
     // Check config
-    if (root.containsKey("config") && root["config"].is<JsonArray&>()) {
+    JsonObject& config = root["config"];
+    if (config.success()) {
 
-        JsonArray& config = root["config"];
         DEBUG_MSG_P(PSTR("[WEBSOCKET] Parsing configuration data\n"));
 
-        unsigned char webMode = WEB_MODE_NORMAL;
-
         bool save = false;
-        bool changed = false;
-        #if ENABLE_MQTT
-        bool changedMQTT = false;
-        #endif
-        unsigned int network = 0;
-        String adminPass;
+        String pass1, pass2;
 
-        for (unsigned int i=0; i<config.size(); i++) {
+        for (auto kv: config) {
 
-            String key = config[i]["name"];
-            String value = config[i]["value"];
+            String key = kv.key;
+            JsonVariant& value = kv.value;
+
+            #if not ENABLE_MQTT
+            if (key.startsWith("mqtt")) continue;
+            #endif
 
             // Skip firmware filename
             if (key.equals("filename")) continue;
 
-            // Web portions
-            if (key == "webPort") {
-                if ((value.toInt() == 0) || (value.toInt() == 80)) {
-                    save = changed = true;
-                    delSetting(key);
-                    continue;
-                }
-            }
-
-            if (key == "webMode") {
-                webMode = value.toInt();
-                continue;
-            }
-
             // Check password
             if (key == "adminPass1") {
-                adminPass = value;
+                pass1 = value.as<String>();
                 continue;
             }
             if (key == "adminPass2") {
-                if (!value.equals(adminPass)) {
+                pass2 = value.as<String>();
+                if (!pass2.equals(pass1)) {
                     ws.text(client_id, "{\"message\": \"Passwords do not match!\"}");
                     return;
                 }
-                if (value.length() == 0) continue;
+                if (pass2.length() == 0) continue;
                 ws.text(client_id, "{\"action\": \"reload\"}");
                 key = String("adminPass");
             }
 
-            if (key == "ssid") {
-                key = key + String(network);
-            }
-            if (key == "pass") {
-                key = key + String(network);
-            }
-            if (key == "ip") {
-                key = key + String(network);
-            }
-            if (key == "gw") {
-                key = key + String(network);
-            }
-            if (key == "mask") {
-                key = key + String(network);
-            }
-            if (key == "dns") {
-                key = key + String(network);
-                ++network;
-            }
-
-            if (value != getSetting(key)) {
-                //DEBUG_MSG_P(PSTR("[WEBSOCKET] Storing %s = %s\n", key.c_str(), value.c_str()));
-                setSetting(key, value);
-                save = changed = true;
-                #if ENABLE_MQTT
-                if (key.startsWith("mqtt")) changedMQTT = true;
-                #endif
-            }
-
-        }
-
-        if (webMode == WEB_MODE_NORMAL) {
-
-            // Clean wifi networks
-            unsigned char i = 0;
-            while (i < network) {
-                if (getSetting("ssid" + String(i)).length() == 0) {
-                    delSetting("ssid" + String(i));
-                    break;
-                }
-                if (getSetting("pass" + String(i)).length() == 0) delSetting("pass" + String(i));
-                if (getSetting("ip" + String(i)).length() == 0) delSetting("ip" + String(i));
-                if (getSetting("gw" + String(i)).length() == 0) delSetting("gw" + String(i));
-                if (getSetting("mask" + String(i)).length() == 0) delSetting("mask" + String(i));
-                if (getSetting("dns" + String(i)).length() == 0) delSetting("dns" + String(i));
-                ++i;
-            }
-            while (i < WIFI_MAX_NETWORKS) {
-                if (getSetting("ssid" + String(i)).length() > 0) {
-                    save = changed = true;
-                }
-                delSetting("ssid" + String(i));
-                delSetting("pass" + String(i));
-                delSetting("ip" + String(i));
-                delSetting("gw" + String(i));
-                delSetting("mask" + String(i));
-                delSetting("dns" + String(i));
-                ++i;
+            // Store values
+            if (value.is<JsonArray&>()) {
+                if (_wsStore(key, value.as<JsonArray&>())) save = true;
+            } else {
+                if (_wsStore(key, value.as<String>())) save = true;
             }
 
         }
@@ -255,22 +223,19 @@ void _wsParse(uint32_t client_id, uint8_t * payload, size_t length) {
             saveSettings();
             wifiConfigure();
             otaConfigure();
-            #if ENABLE_MQTT
-            buildTopics();
-            #endif
 
             // Check if we should reconfigure MQTT connection
             #if ENABLE_MQTT
-            if (changedMQTT) {
+                buildTopics();
                 mqttDisconnect();
-            }
             #endif
-        }
 
-        if (changed) {
             ws.text(client_id, "{\"message\": \"Changes saved\"}");
+
         } else {
+
             ws.text(client_id, "{\"message\": \"No changes detected\"}");
+
         }
 
     }
@@ -285,65 +250,61 @@ void _wsStart(uint32_t client_id) {
     DynamicJsonBuffer jsonBuffer;
     JsonObject& root = jsonBuffer.createObject();
 
-    bool changePassword = false;
-    #if FORCE_CHANGE_PASS == 1
-        String adminPass = getSetting("adminPass", ADMIN_PASS);
-        if (adminPass.equals(ADMIN_PASS)) changePassword = true;
+    root["app"] = APP_NAME;
+    root["version"] = APP_VERSION;
+    root["buildDate"] = __DATE__;
+    root["buildTime"] = __TIME__;
+
+    root["manufacturer"] = String(MANUFACTURER);
+    root["chipid"] = chipid;
+    root["mac"] = WiFi.macAddress();
+    root["device"] = String(DEVICE);
+    root["hostname"] = getSetting("hostname", HOSTNAME);
+    root["network"] = getNetwork();
+    root["deviceip"] = getIP();
+    root["webPort"] = getSetting("webPort", WEBSERVER_PORT).toInt();
+
+    // MQTT
+    #if ENABLE_MQTT
+    root["mqttVisible"] = true;
+    root["mqttStatus"] = mqttConnected();
+    root["mqttServer"] = getSetting("mqttServer", MQTT_SERVER);
+    root["mqttPort"] = getSetting("mqttPort", MQTT_PORT);
+    root["mqttUser"] = getSetting("mqttUser");
+    root["mqttPassword"] = getSetting("mqttPassword");
+    root["mqttTopic"] = getSetting("mqttTopic", MQTT_TOPIC);
     #endif
 
-    if (changePassword) {
+    // NTP
+    root["ntpVisible"] = true;
+    root["ntpServer"] = getSetting("ntpServer", NTP_SERVER);
+    root["ntpOffset"] = getSetting("ntpOffset", NTP_TIME_OFFSET).toInt();
+    root["ntpDST"] = getSetting("ntpDST", NTP_DAY_LIGHT).toInt();
+    
+    // Time sync modes
+    root["timeSync"] = getSetting("timeSync", TIME_SYNC_MODE).toInt();
+    root["timeEvery"] = getSetting("timeEvery", TIME_SYNC_EVERY).toInt();
+    root["timeWhen"] = getSetting("timeWhen", TIME_SYNC_WHEN).toInt();
 
-        root["webMode"] = WEB_MODE_PASSWORD;
+    // Canvas
+    #if ENABLE_DRIVER_CANVAS
+    root["canvasVisible"] = true;
+    #endif
+    root["matrixWidth"] = MATRIX_WIDTH;
+    root["matrixHeight"] = MATRIX_HEIGHT;
 
-    } else {
-
-        root["webMode"] = WEB_MODE_NORMAL;
-
-        root["app"] = APP_NAME;
-        root["version"] = APP_VERSION;
-        root["buildDate"] = __DATE__;
-        root["buildTime"] = __TIME__;
-
-        root["manufacturer"] = String(MANUFACTURER);
-        root["chipid"] = chipid;
-        root["mac"] = WiFi.macAddress();
-        root["device"] = String(DEVICE);
-        root["hostname"] = getSetting("hostname", HOSTNAME);
-        root["network"] = getNetwork();
-        root["deviceip"] = getIP();
-
-        #if ENABLE_MQTT
-        root["mqttVisible"] = true;
-        root["mqttStatus"] = mqttConnected();
-        root["mqttServer"] = getSetting("mqttServer", MQTT_SERVER);
-        root["mqttPort"] = getSetting("mqttPort", MQTT_PORT);
-        root["mqttUser"] = getSetting("mqttUser");
-        root["mqttPassword"] = getSetting("mqttPassword");
-        root["mqttTopic"] = getSetting("mqttTopic", MQTT_TOPIC);
-        #endif
-
-        #if ENABLE_DRIVER_CANVAS
-        root["canvasVisible"] = true;
-        #endif
-
-        root["matrixWidth"] = MATRIX_WIDTH;
-        root["matrixHeight"] = MATRIX_HEIGHT;
-
-        root["webPort"] = getSetting("webPort", WEBSERVER_PORT).toInt();
-
-        root["maxNetworks"] = WIFI_MAX_NETWORKS;
-        JsonArray& wifi = root.createNestedArray("wifi");
-        for (byte i=0; i<WIFI_MAX_NETWORKS; i++) {
-            if (getSetting("ssid" + String(i)).length() == 0) break;
-            JsonObject& network = wifi.createNestedObject();
-            network["ssid"] = getSetting("ssid" + String(i));
-            network["pass"] = getSetting("pass" + String(i));
-            network["ip"] = getSetting("ip" + String(i));
-            network["gw"] = getSetting("gw" + String(i));
-            network["mask"] = getSetting("mask" + String(i));
-            network["dns"] = getSetting("dns" + String(i));
-        }
-
+    // WiFi
+    root["maxNetworks"] = WIFI_MAX_NETWORKS;
+    JsonArray& wifi = root.createNestedArray("wifi");
+    for (byte i=0; i<WIFI_MAX_NETWORKS; i++) {
+        if (getSetting("ssid" + String(i)).length() == 0) break;
+        JsonObject& network = wifi.createNestedObject();
+        network["ssid"] = getSetting("ssid" + String(i));
+        network["pass"] = getSetting("pass" + String(i));
+        network["ip"] = getSetting("ip" + String(i));
+        network["gw"] = getSetting("gw" + String(i));
+        network["mask"] = getSetting("mask" + String(i));
+        network["dns"] = getSetting("dns" + String(i));
     }
 
     String output;
@@ -422,10 +383,13 @@ void webLogRequest(AsyncWebServerRequest *request) {
 }
 
 bool _authenticate(AsyncWebServerRequest *request) {
-    String password = getSetting("adminPass", ADMIN_PASS);
-    char httpPassword[password.length() + 1];
-    password.toCharArray(httpPassword, password.length() + 1);
-    return request->authenticate(HTTP_USERNAME, httpPassword);
+    String password = getAdminPass();
+    if (!password.equals(ADMIN_PASS)) {
+        char httpPassword[password.length() + 1];
+        password.toCharArray(httpPassword, password.length() + 1);
+        return request->authenticate(HTTP_USERNAME, httpPassword);
+    }
+    return false;
 }
 
 void _onAuth(AsyncWebServerRequest *request) {

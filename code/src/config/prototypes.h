@@ -6,6 +6,7 @@
 #include <ESPAsyncWebServer.h>
 #include <functional>
 #include <RtcDateTime.h>
+#include <ArduinoJson.h>
 
 #define UNUSED(x) (void)(x)
 

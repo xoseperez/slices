@@ -83,7 +83,8 @@ unsigned int * fibonacci_blocks[5] = { fibonacci_block_01a, fibonacci_block_01b,
 
 unsigned long fibonacci_colors[4];
 
-unsigned char fibonacciPreviousMinute = 0;
+unsigned char fibonacciPreviousMinute = 61;
+unsigned char fibonacciPreviousHour = 25;
 
 // -----------------------------------------------------------------------------
 // DRIVER
@@ -117,9 +118,10 @@ void fibonacciClockLoop() {
 
     RtcDateTime now = rtcGet();
     int currentMinute = now.Minute();
-    if (currentMinute == fibonacciPreviousMinute) return;
-    fibonacciPreviousMinute = currentMinute;
     int currentHour = now.Hour();
+    if ((currentMinute == fibonacciPreviousMinute) && (currentHour == fibonacciPreviousHour)) return;
+    fibonacciPreviousMinute = currentMinute;
+    fibonacciPreviousHour = currentHour;
 
     // Load each value matrix separatelly
     unsigned int hours[MATRIX_HEIGHT] = {0};

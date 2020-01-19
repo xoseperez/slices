@@ -16,7 +16,20 @@ bool _ntpConnected = false;
 // -----------------------------------------------------------------------------
 
 void ntpConnect() {
-    NTP.begin(NTP_SERVER, NTP_TIME_OFFSET, NTP_DAY_LIGHT);
+
+    int offset = getSetting("ntpOffset", NTP_TIME_OFFSET).toInt();
+    int sign = offset > 0 ? 1 : -1;
+    offset = abs(offset);
+    int tz_hours = sign * (offset / 60);
+    int tz_minutes = sign * (offset % 60);
+
+    NTP.begin(
+        getSetting("ntpServer", NTP_SERVER).c_str(), 
+        tz_hours, 
+        getSetting("ntpDST", NTP_DAY_LIGHT).toInt() == 1,
+        tz_minutes
+    );
+
 }
 
 void ntpDisconnect() {

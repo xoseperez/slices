@@ -13,6 +13,22 @@ RtcDS1307<TwoWire> rtc(Wire);
 // RTC
 // -----------------------------------------------------------------------------
 
+void rtcDebug() {
+
+    RtcDateTime now = rtcGet();
+
+    DEBUG_MSG_P(
+        PSTR("[RTC] Time: %02u:%02u:%02u %02u/%02u/%04u\n"),
+        now.Hour(),
+        now.Minute(),
+        now.Second(),
+        now.Day(),
+        now.Month(),
+        now.Year()
+    );
+
+}
+
 void rtcSetup() {
 
     rtc.Begin();
@@ -37,20 +53,13 @@ void rtcSetup() {
 
     }
 
-    DEBUG_MSG_P(
-        PSTR("[RTC] Time: %02u:%02u:%02u %02u/%02u/%04u\n"),
-        now.Hour(),
-        now.Minute(),
-        now.Second(),
-        now.Day(),
-        now.Month(),
-        now.Year()
-    );
+    rtcDebug();
 
 }
 
 void rtcSet(RtcDateTime now) {
     rtc.SetDateTime(now);
+    rtcDebug();
 }
 
 RtcDateTime rtcGet() {

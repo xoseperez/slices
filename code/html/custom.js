@@ -11,6 +11,58 @@ var drawingColor = "#ffffff";
 
 var timer;
 
+// ----------------------------------------------------------------------------
+// Time methods
+// ----------------------------------------------------------------------------
+
+function zeroPad(number, positions) {
+    return number.toString().padStart(positions, "0");
+}
+
+function updateTime() {
+    var d = new Date();
+    var value =
+        zeroPad(d.getDate(), 2) + "/" +
+        zeroPad(d.getMonth() + 1, 2) + "/" +
+        zeroPad(d.getFullYear(), 4) + " " +
+        zeroPad(d.getHours(), 2) + ":" +
+        zeroPad(d.getMinutes(), 2) + ":" +
+        zeroPad(d.getSeconds(), 2);
+    $("input[name='timeNow']").val(value);
+}
+
+function loadTimeZones() {
+
+    var time_zones = [
+        -720, -660, -600, -570, -540,
+        -480, -420, -360, -300, -240,
+        -210, -180, -120, -60, 0,
+        60, 120, 180, 210, 240,
+        270, 300, 330, 345, 360,
+        390, 420, 480, 510, 525,
+        540, 570, 600, 630, 660,
+        720, 765, 780, 840
+    ];
+
+    for (var i in time_zones) {
+        var tz = time_zones[i];
+        var offset = tz >= 0 ? tz : -tz;
+        var text = "GMT" + (tz >= 0 ? "+" : "-") +
+            zeroPad(parseInt(offset / 60, 10), 2) + ":" +
+            zeroPad(offset % 60, 2);
+        $("select[name='ntpOffset']").append(
+            $("<option></option>")
+                .attr("value", tz)
+                .text(text)
+        );
+    }
+
+}
+
+// ----------------------------------------------------------------------------
+// Password methods
+// ----------------------------------------------------------------------------
+
 // http://www.the-art-of-web.com/javascript/validate-password/
 function checkPassword(str) {
     // at least one number, one lowercase and one uppercase letter
@@ -38,24 +90,68 @@ function validateForm(form) {
 
 }
 
-function updateTime() {
-    var d = new Date();
-    var value =
-        zeroPad(d.getDate(), 2) + "/" +
-        zeroPad(d.getMonth() + 1, 2) + "/" +
-        zeroPad(d.getFullYear(), 4) + " " +
-        zeroPad(d.getHours(), 2) + ":" +
-        zeroPad(d.getMinutes(), 2) + ":" +
-        zeroPad(d.getSeconds(), 2);
-    $("input[name='timeNow']").val(value);
+// ----------------------------------------------------------------------------
+// Buttons & actions
+// ----------------------------------------------------------------------------
+
+// These fields will always be a list of values
+function isGroupValue(value) {
+    var names = [
+        "ssid", "pass", "gw", "mask", "ip", "dns",
+        "adminPass"
+    ];
+    return names.indexOf(value) >= 0;
+}
+
+function getValue(element) {
+
+    if ($(element).attr("type") === "checkbox") {
+        return $(element).prop("checked") ? 1 : 0;
+    } else if ($(element).attr("type") === "radio") {
+        if (!$(element).prop("checked")) {
+            return null;
+        }
+    }
+
+    return $(element).val();
+
+}
+
+function addValue(data, name, value) {
+
+    if (name in data) {
+        if (!Array.isArray(data[name])) {
+            data[name] = [data[name]];
+        }
+        data[name].push(value);
+    } else if (isGroupValue(name)) {
+        data[name] = [value];
+    } else {
+        data[name] = value;
+    }
+
+}
+
+function getData(form) {
+    
+    var data = {};
+
+    $("input,select", form).each(function() {
+        var name = $(this).attr("name");
+        var value = getValue(this);
+        addValue(data, name, value);
+    });
+    
+    delete(data['filename']);
+    console.log(data);
+    return data;
+
 }
 
 function doUpdate() {
     var form = $("#formSave");
     if (validateForm(form)) {
-        var data = form.serializeArray();
-        delete(data['filename']);
-        websock.send(JSON.stringify({'config': data}));
+        websock.send(JSON.stringify({'config': getData(form)}));
     }
     return false;
 }
@@ -182,6 +278,10 @@ function restoreSettings() {
     return false;
 }
 
+// ----------------------------------------------------------------------------
+// Matrix methods
+// ----------------------------------------------------------------------------
+
 function setPixel(x, y, color) {
 
     // draw square
@@ -235,6 +335,10 @@ function updateCanvas() {
 
 }
 
+// ----------------------------------------------------------------------------
+// Block visibility
+// ----------------------------------------------------------------------------
+
 function showPanel() {
     $(".panel").hide();
     $("#" + $(this).attr("data")).show();
@@ -246,6 +350,16 @@ function toggleMenu() {
     $("#menu").toggleClass('active');
     $("#menuLink").toggleClass('active');
 }
+
+function toggleTimeSync() {
+    var value = $('select[name="timeSync"]').val();
+    $('input[name="timeEvery"]').toggle(value == 0);
+    $('select[name="timeWhen"]').toggle(value == 1);
+}
+
+// ----------------------------------------------------------------------------
+// WiFi
+// ----------------------------------------------------------------------------
 
 function delNetwork() {
     var parent = $(this).parents(".pure-g");
@@ -297,6 +411,10 @@ function forgetCredentials() {
     });
 }
 
+// ----------------------------------------------------------------------------
+// Link to device
+// ----------------------------------------------------------------------------
+
 function processData(data) {
 
     // title
@@ -313,14 +431,6 @@ function processData(data) {
     }
 
     Object.keys(data).forEach(function(key) {
-
-        // Web Modes
-        if (key == "webMode") {
-            password = data.webMode == 1;
-            $("#layout").toggle(data.webMode == 0);
-            $("#password").toggle(data.webMode == 1);
-            $("#credentials").hide();
-        }
 
         // Actions
         if (key == "action") {
@@ -421,9 +531,14 @@ function processData(data) {
         doGenerateAPIKey();
     }
 
+    toggleTimeSync();
     updateCanvas();
 
 }
+
+// ----------------------------------------------------------------------------
+// Init
+// ----------------------------------------------------------------------------
 
 function getJson(str) {
     try {
@@ -431,6 +546,18 @@ function getJson(str) {
     } catch (e) {
         return false;
     }
+}
+
+function createCheckboxes() {
+
+    $("input[type='checkbox']").each(function() {
+
+        if($(this).prop("name"))$(this).prop("id", $(this).prop("name"));
+        $(this).parent().addClass("toggleWrapper");
+        $(this).after('<label for="' + $(this).prop("name") + '" class="toggle"><span class="toggle__handler"></span></label>')
+
+    });
+
 }
 
 function connect(h, p) {
@@ -463,6 +590,8 @@ function connect(h, p) {
 
 function init() {
 
+    createCheckboxes();
+
     $("#menuLink").on('click', toggleMenu);
     $(".button-update").on('click', doUpdate);
     $(".button-update-password").on('click', doUpdatePassword);
@@ -492,6 +621,17 @@ function init() {
         drawingColor = $(this).wheelColorPicker('getValue', 'css');
     });
 
+    $('select[name="timeSync"]').on('change', function() {
+        toggleTimeSync();
+    });
+    $(".button-sync").on('click', function() {
+        var d = new Date();
+        var t = parseInt(d.getTime() / 1000) - d.getTimezoneOffset() * 60;
+        websock.send(JSON.stringify({'action': 'time', 'data': t}));
+        return false;
+    });
+    loadTimeZones();
+
     var host = window.location.hostname;
     var port = location.port;
 
@@ -503,6 +643,7 @@ function init() {
     }).fail(function(){
         $("#credentials").show();
     });
+
 
     timer = setInterval(updateTime, 1000);
 

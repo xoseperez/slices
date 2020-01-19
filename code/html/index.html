@@ -19,56 +19,7 @@
 
     <body>
 
-        <div id="credentials" class="webmode">
-            Wrong credentials
-        </div>
-
-        <div id="password" class="webmode">
-
-            <div class="content">
-
-                <form id="formPassword" class="pure-form" action="/" method="post">
-
-                    <input class="pure-u-1 pure-u-sm-3-4" type="hidden" name="webMode" value="1" />
-
-                    <div class="panel" style="display: block;">
-
-                        <div class="header">
-                            <h1>SECURITY</h1>
-                            <h2>Before using this device you have to change the default password for the user 'admin'. This password will be used for the <strong>AP mode hotspot</strong>, the <strong>web interface</strong> (where you are now) and the <strong>over-the-air updates</strong>.</h2>
-                        </div>
-
-                        <div class="page">
-
-                            <fieldset>
-
-                                <div class="pure-g">
-                                    <label class="pure-u-1 pure-u-md-1-4" for="adminPass1">Admin password</label>
-                                    <input name="adminPass1" class="pure-u-1 pure-u-md-3-4" type="password" tabindex="1" />
-                                    <div class="pure-u-0 pure-u-md-1-4">&nbsp;</div>
-                                    <div class="pure-u-1 pure-u-md-3-4 hint">
-                                        The administrator password is used to access this web interface (user 'admin'), but also to connect to the device when in AP mode or to flash a new firmware over-the-air (OTA).<br />
-                                        It should have at least <strong>eight characters</strong> (letters, numbers or the underscore) and at least <strong>one number</strong>, <strong>one lowercase</strong> and <strong>one uppercase</strong> letter.</div>
-                                </div>
-
-                                <div class="pure-g">
-                                    <label class="pure-u-1 pure-u-md-1-4" for="adminPass2">Admin password (repeat)</label>
-                                    <input name="adminPass2" class="pure-u-1 pure-u-md-3-4" type="password" tabindex="2" />
-                                </div>
-
-                                <button class="pure-button button-update-password">Update</button>
-
-                            </fieldset>
-                        </div>
-                    </div>
-
-                </form>
-
-            </div> <!-- content -->
-
-        </div>
-
-        <div id="layout" class="webmode">
+        <div id="layout">
 
             <a href="#menu" id="menuLink" class="menu-link">
                 <span></span>
@@ -83,6 +34,10 @@
 
                         <li class="pure-menu-item">
                             <a href="#" class="pure-menu-link" data="panel-status">STATUS</a>
+                        </li>
+
+                        <li class="pure-menu-item">
+                            <a href="#" class="pure-menu-link" data="panel-time">TIME</a>
                         </li>
 
                         <li class="pure-menu-item">
@@ -135,18 +90,9 @@
                             <fieldset>
 
                                 <div class="pure-g">
-                                    <label class="pure-u-1 pure-u-lg-1-4">Online sync</label>
-                                    <select name="onlineSync" class="pure-u-1 pure-u-lg-3-4" tabindex="0">
-                                        <option value="0">Connected permanently</option>
-                                        <option value="1">Connect to update time, then disconnect</option>
-                                        <option value="3">Only manual (no WiFi)</option>
-                                    </select>
-                                    <div class="pure-u-0 pure-u-lg-1-4"></div>
-                                </div>
-
-                                <div class="pure-g">
-                                    <label class="pure-u-1 pure-u-sm-1-4" for="manufacturer">Current time</label>
+                                    <label class="pure-u-1 pure-u-sm-1-4" for="timeNow">Host time</label>
                                     <input class="pure-u-1 pure-u-sm-1-2" type="text" name="timeNow" readonly />
+                                    <div class=" pure-u-1-8 pure-u-md-1-4"><button class="pure-button button-sync pure-u-23-24">Sync</button></div>
                                 </div>
 
                                 <div class="pure-g">
@@ -186,8 +132,6 @@
                 </div>
 
                 <form id="formSave" class="pure-form" action="/" method="post" enctype="multipart/form-data">
-
-                    <input class="pure-u-1 pure-u-sm-3-4" type="hidden" name="webMode" value="0" />
 
                     <div class="panel" id="panel-admin">
 
@@ -311,6 +255,75 @@
                                     <div class="pure-u-1 pure-u-md-3-4 hint">
                                         This is the root topic for this device. A trailing slash will be added if not preset. The {identifier} placeholder will be replaces by the device hostname.<br />
                                     </div>
+                                </div>
+
+                            </fieldset>
+                        </div>
+
+                    </div>
+
+                    <div class="panel" id="panel-time">
+
+                        <div class="header">
+                            <h1>TIME</h1>
+                            <h2>Configure your time sync options and the NTP (Network Time Protocol) servers to keep your device time up to the second for your location.</h2>
+                        </div>
+
+                        <div class="page">
+
+                            <fieldset>
+
+                                <div class="pure-g">
+                                    <label class="pure-u-1 pure-u-lg-1-4">Online sync</label>
+                                    <div class="pure-u-1 pure-u-lg-15-24">
+                                        <select name="timeSync" class="pure-u-1 pure-u-lg-23-24" tabindex="0">
+                                            <option value="0">Connect every these many hours:</option>
+                                            <option value="1">Connect once a day at: </option>
+                                            <option value="2">Only manually (double click the button)</option>
+                                        </select>
+                                    </div>
+                                    <input class="module pure-u-1 pure-u-lg-1-8" type="number" name="timeEvery" min="1" max="168" />
+                                    <select name="timeWhen" class="module pure-u-1 pure-u-lg-1-8" tabindex="2">
+                                        <option value="0">00:00</option>
+                                        <option value="1">01:00</option>
+                                        <option value="2">02:00</option>
+                                        <option value="3">03:00</option>
+                                        <option value="4">04:00</option>
+                                        <option value="5">05:00</option>
+                                        <option value="6">06:00</option>
+                                        <option value="7">07:00</option>
+                                        <option value="8">08:00</option>
+                                        <option value="9">09:00</option>
+                                        <option value="10">10:00</option>
+                                        <option value="11">11:00</option>
+                                        <option value="12">12:00</option>
+                                        <option value="13">13:00</option>
+                                        <option value="14">14:00</option>
+                                        <option value="15">15:00</option>
+                                        <option value="16">16:00</option>
+                                        <option value="16">17:00</option>
+                                        <option value="18">18:00</option>
+                                        <option value="19">19:00</option>
+                                        <option value="20">20:00</option>
+                                        <option value="21">21:00</option>
+                                        <option value="22">22:00</option>
+                                        <option value="23">23:00</option>
+                                    </select>
+                                </div>
+
+                                <div class="pure-g">
+                                    <label class="pure-u-1 pure-u-lg-1-4">NTP Server</label>
+                                    <input class="pure-u-1 pure-u-lg-3-4" name="ntpServer" type="text" tabindex="41" />
+                                </div>
+
+                                <div class="pure-g">
+                                    <label class="pure-u-1 pure-u-lg-1-4">Time Zone</label>
+                                    <select class="pure-u-1 pure-u-lg-1-4" name="ntpOffset" tabindex="42"></select>
+                                </div>
+
+                                <div class="pure-g">
+                                    <label class="pure-u-1 pure-u-lg-1-4">Enable DST</label>
+                                    <div class="pure-u-1 pure-u-lg-1-4"><input type="checkbox" name="ntpDST" /></div>
                                 </div>
 
                             </fieldset>

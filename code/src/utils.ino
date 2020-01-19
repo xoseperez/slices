@@ -32,6 +32,10 @@ String getBoardName() {
     return getSetting("boardName", DEVICE_NAME);
 }
 
+String getHostName() {
+    return getSetting("hostname", HOSTNAME);
+}
+
 String getAdminPass() {
     return getSetting("adminPass", ADMIN_PASS);
 }

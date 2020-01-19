@@ -58,9 +58,13 @@
 #define UPTIME_OVERFLOW         4294967295
 #define ONE_SECOND              1000
 #define SETTINGS_AUTOSAVE       1
-#define WIFI_OFF_AFTER          120         // in seconds
-#define WIFI_ON_EVERY           6           // in hours
 #define USE_PASSWORD            0
+#define SETTINGS_MAX_LIST_COUNT 10
+
+#define WIFI_OFF_AFTER          120         // in seconds
+#define TIME_SYNC_MODE          0           // 0: every, 1: when, 2: manual
+#define TIME_SYNC_EVERY         6           // in hours (can be > 24)
+#define TIME_SYNC_WHEN          20          // at 20:00
 
 //--------------------------------------------------------------------------------
 // DEBUG
@@ -175,7 +179,7 @@
 #define WIFI_RECONNECT_INTERVAL 120000
 #define WIFI_MAX_NETWORKS       5
 #define ADMIN_PASS              "fibonacci"
-#define FORCE_CHANGE_PASS       1
+#define FORCE_CHANGE_PASS       0
 #define HTTP_USERNAME           "admin"
 
 #define ENABLE_WEB              1
@@ -261,9 +265,8 @@
 // -----------------------------------------------------------------------------
 
 #define NTP_SERVER              "pool.ntp.org"
-#define NTP_TIME_OFFSET         1
-#define NTP_DAY_LIGHT           true
-#define NTP_UPDATE_INTERVAL     1800
+#define NTP_TIME_OFFSET         60              // in minutes
+#define NTP_DAY_LIGHT           1               // 0 or 1            
 
 //------------------------------------------------------------------------------
 // TERMINAL

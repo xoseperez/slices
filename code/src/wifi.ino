@@ -105,8 +105,12 @@ bool wifiOn(bool open_ap) {
 
 void wifiConfigure() {
 
-    jw.setHostname(getSetting("hostname", HOSTNAME).c_str());
-    jw.setSoftAP(getSetting("hostname", HOSTNAME).c_str(), getSetting("adminPass", ADMIN_PASS).c_str());
+    jw.setHostname(getHostName().c_str());
+    if (hasSetting("adminPass")) {
+        jw.setSoftAP(getHostName().c_str(), getAdminPass().c_str());
+    } else {
+        jw.setSoftAP(getHostName().c_str());
+    }
     jw.setReconnectTimeout(WIFI_RECONNECT_INTERVAL);
     jw.enableAPFallback(true);
     jw.cleanNetworks();
@@ -186,7 +190,11 @@ void wifiDebug() {
 
 void _wifiUpdateSoftAP() {
     if (WiFi.softAPgetStationNum() == 0) {
-        jw.setSoftAP(getSetting("hostname").c_str(), getAdminPass().c_str());
+        if (hasSetting("adminPass")) {
+            jw.setSoftAP(getHostName().c_str(), getAdminPass().c_str());
+        } else {
+            jw.setSoftAP(getHostName().c_str());
+        }
     }
 }
 
@@ -406,6 +414,7 @@ void wifiLoop() {
     int currentHour = now.Hour();
     if (currentHour == _wifi_previous_hour) return;
     _wifi_previous_hour = currentHour;
-    if (_wifi_previous_hour % WIFI_ON_EVERY == 0) wifiOn(false);
+    uint8_t timeEvery = getSetting("timeEvery", TIME_SYNC_EVERY).toInt();
+    if (_wifi_previous_hour % timeEvery == 0) wifiOn(false);
 
 }

@@ -42,6 +42,8 @@ void stateShow() {
     if (STATE_CONNECTED == _state) color = CRGB::Green;
     if (STATE_ERROR == _state) color = CRGB::Red;
 
-    matrixSetPixelColor(0, MATRIX_HEIGHT - 1, color);
+    #ifdef FIBONACCI
+        matrixSetPixelColor(0, MATRIX_HEIGHT - 1, color);
+    #endif
 
 }
