@@ -55,6 +55,11 @@ void rtcSetup() {
 
     rtcDebug();
 
+    terminalRegisterCommand(F("TIME"), [](Embedis* e) {
+        rtcDebug();
+        terminalOK();
+    });
+
 }
 
 void rtcSet(RtcDateTime now) {
