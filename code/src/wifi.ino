@@ -81,17 +81,8 @@ bool startWPS() {
     return true;
 }
 
-bool wifiOff() {
-    jw.enableSTA(false);
-    jw.enableAP(false);
-    jw.enableAPFallback(false);
-    jw.disconnect();
-    return true;
-}
-
 void preOff() {
     if (wsCount() == 0) {
-        DEBUG_MSG_P(PSTR("[WIFI] Turning WiFi off\n"));
         wifiOff();
     } else {
         DEBUG_MSG_P(PSTR("[WIFI] Keeping WiFi on since there is a client connected\n"));
@@ -99,8 +90,14 @@ void preOff() {
     }
 }
 
+bool wifiOff() {
+    jw.enableAPFallback(false);
+    jw.turnOff();
+    return true;
+}
+
 bool wifiOn(bool open_ap) {
-    jw.enableSTA(true);
+    jw.turnOn();
     jw.enableAPFallback(open_ap);
     return true;
 }
@@ -331,6 +328,17 @@ void _wifiDebugCallback(justwifi_messages_t code, char * parameter) {
         DEBUG_MSG_P(PSTR("[WIFI] Smart Config failed\n"));
     }
 
+    // ------------------------------------------------------------------------
+
+    if (code == MESSAGE_TURNING_ON) {
+        DEBUG_MSG_P(PSTR("[WIFI] Turning WiFi ON\n"));
+    }
+
+    if (code == MESSAGE_TURNING_OFF) {
+        DEBUG_MSG_P(PSTR("[WIFI] Turning WiFi OFF\n"));
+        stateSet(STATE_IDLE);
+    }
+
 }
 
 #endif
@@ -391,7 +399,7 @@ void wifiSetup() {
         if (code == MESSAGE_CONNECTED) {
             ntpConnect();
         }
-        if (code == MESSAGE_DISCONNECTED) {
+        if ((code == MESSAGE_DISCONNECTED) || (code == MESSAGE_TURNING_OFF)) {
             ntpDisconnect();
         }
 
