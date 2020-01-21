@@ -12,6 +12,8 @@ typedef struct {
     blindCallback startFn = NULL;
     blindCallback loopFn = NULL;
     blindCallback stopFn = NULL;
+    paramCallback statusFn = NULL;
+    paramCallback progressFn = NULL;
 } driver_t;
 std::vector<driver_t> _drivers;
 unsigned char _currentDriver = 0;
@@ -25,12 +27,14 @@ void driverSetup() {
     driverSet(driver);
 }
 
-unsigned char driverRegister(const char * name, blindCallback startFn, blindCallback loopFn, blindCallback stopFn) {
+unsigned char driverRegister(const char * name, blindCallback startFn, blindCallback loopFn, blindCallback stopFn, paramCallback statusFn, paramCallback progressFn) {
     driver_t driver;
     driver.name = strdup(name);
     driver.startFn = startFn;
     driver.loopFn = loopFn;
     driver.stopFn = stopFn;
+    driver.statusFn = statusFn;
+    driver.progressFn = progressFn;
     _drivers.push_back(driver);
     DEBUG_MSG_P(PSTR("[DRIVER] Registering: %s\n"), name);
     return _drivers.size() - 1;
@@ -71,7 +75,7 @@ int driverFind(const char * name) {
 void driverSet(unsigned char i) {
     if (i <= _drivers.size() - 1) {
         driverStop();
-        _currentDriver = i;
+        _currentDriver = i; 
         driverStart();
         DEBUG_MSG_P(PSTR("[DRIVER] Set to '%s'\n"), _drivers[_currentDriver].name);
         EEPROMr.write(EEPROM_DRIVER, _currentDriver);
@@ -86,4 +90,24 @@ unsigned char driverCount() {
 void driverNext() {
     unsigned char nextDriver = (_currentDriver + 1) % _drivers.size();
     driverSet(nextDriver);
+}
+
+void driverCommonStatus(uint8_t value) {
+    CRGB color = stateColor(value);
+    matrixSetPixelColor(0, MATRIX_HEIGHT - 1, color);
+}
+
+void driverCommonProgress(uint8_t value) {
+    long num = MATRIX_WIDTH * value / 100;
+    for (unsigned char x=0; x<MATRIX_WIDTH; x++) {
+        if (num >= x) matrixSetPixelColor(x, MATRIX_HEIGHT-1, CRGB::Green);
+    }
+}
+
+void driverStatus(uint8_t value) {
+    if (_drivers[_currentDriver].statusFn) (_drivers[_currentDriver].statusFn)(value);
+}
+
+void driverProgress(uint8_t value) {
+    if (_drivers[_currentDriver].progressFn) (_drivers[_currentDriver].progressFn)(value);
 }

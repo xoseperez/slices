@@ -85,7 +85,7 @@
     #define CIRCLE_SIZE                 60
     #define ENABLE_DRIVER_SCROLL        1
     #define ENABLE_DRIVER_CIRCLE        1
-    #define DEVICE_NAME                 "SCROLLCLOCK"
+    #define DEVICE_NAME                 "CLOCK"
 #endif
 
 #ifdef DEVICE_BIG_CANVAS
@@ -94,7 +94,7 @@
     #define ENABLE_DRIVER_BINARY        1
     #define ENABLE_DRIVER_CANVAS        1
     #define ENABLE_DRIVER_GAME_OF_LIFE  1
-    #define DEVICE_NAME                 "CLOCK"
+    #define DEVICE_NAME                 "SLICES"
 #endif
 
 #ifdef DEVICE_SMALL_CANVAS
@@ -103,7 +103,7 @@
     #define ENABLE_DRIVER_BINARY        1
     #define ENABLE_DRIVER_CANVAS        1
     #define ENABLE_DRIVER_GAME_OF_LIFE  1
-    #define DEVICE_NAME                 "CLOCK"
+    #define DEVICE_NAME                 "SLICES"
 #endif
 
 // Disable all the rest

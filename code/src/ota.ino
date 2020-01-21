@@ -35,38 +35,10 @@ void otaSetup() {
     });
 
     ArduinoOTA.onProgress([](unsigned int progress, unsigned int total) {
-
-        #ifdef DEVICE_FIBONACCI
-            
-            long num = MATRIX_WIDTH * progress / total;
-            for (unsigned char x=0; x<MATRIX_WIDTH; x++) {
-                if (num >= x) matrixSetPixelColor(x, MATRIX_HEIGHT-1, CRGB::Green);
-            }
-
-        #elif CIRCLE_SIZE > 0
-            
-            long num = CIRCLE_SIZE * progress / total;
-            for (unsigned char x=0; x<CIRCLE_SIZE; x++) {
-                if (num >= x) matrixSetPixelColor(CIRCLE_START + x, CRGB::Green);
-            }
-
-        #else
-            
-            long num = MATRIX_WIDTH * MATRIX_HEIGHT * progress / total;
-            for (unsigned char y=0; y<MATRIX_HEIGHT; y++) {
-                if (num >= y) {
-                    for (unsigned char x=0; x<MATRIX_WIDTH; x++) {
-                        matrixSetPixelColor(x, MATRIX_HEIGHT-y-1, CRGB::Green);
-                    }
-                }
-            }
-
-        #endif
-
+        uint8_t value = (progress / (total / 100));
+        DEBUG_MSG_P(PSTR("[OTA] Progress: %u%%\r"), value);
+        driverProgress(value);
         matrixRefresh(false);
-
-        DEBUG_MSG_P(PSTR("[OTA] Progress: %u%%\r"), (progress / (total / 100)));
-
     });
 
     ArduinoOTA.onError([](ota_error_t error) {

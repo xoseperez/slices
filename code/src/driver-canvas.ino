@@ -31,7 +31,7 @@ void canvasDraw(byte x, byte y, const char * color) {
 }
 
 void canvasSetup() {
-    driverRegister("canvas", NULL, NULL, NULL);
+    driverRegister("Canvas", NULL, NULL, NULL, driverCommonStatus, driverCommonProgress);
 }
 
 #endif

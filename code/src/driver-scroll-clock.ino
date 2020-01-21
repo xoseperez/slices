@@ -219,7 +219,7 @@ void scrollClockStart() {
 }
 
 void scrollClockSetup() {
-    driverRegister("word-clock", scrollClockStart, NULL, NULL);
+    driverRegister("Scroll clock", scrollClockStart, NULL, NULL, driverCommonStatus, driverCommonProgress);
 }
 
 #endif

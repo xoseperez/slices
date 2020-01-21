@@ -75,3 +75,14 @@ Stream & terminalSerial();
 #include <FastLED_Matrix.h>
 FastLED_Matrix * getMatrix();
 typedef std::function<void(void)> blindCallback;
+typedef std::function<void(uint8_t)> paramCallback;
+
+// -----------------------------------------------------------------------------
+// DRIVERS
+// -----------------------------------------------------------------------------
+
+struct clockword {
+    byte row;
+    unsigned int positions;
+};
+

@@ -42,7 +42,9 @@ void basicClockSetup() {
             basicClockLoop();
         },
         basicClockLoop,
-        NULL
+        NULL,
+        driverCommonStatus, 
+        driverCommonProgress
     );
 }
 
@@ -56,7 +58,7 @@ void basicClockStart() {
 }
 
 void basicClockSetup() {
-    driverRegister("Basic clock", basicClockStart, NULL, NULL);
+    driverRegister("Basic clock", basicClockStart, NULL, NULL, driverCommonStatus, driverCommonProgress);
 }
 
 #endif

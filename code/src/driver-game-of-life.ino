@@ -162,7 +162,7 @@ void gameOfLifeStop() {
 }
 
 void gameOfLifeSetup() {
-    driverRegister("game-of-life", gameOfLifeStart, NULL, gameOfLifeStop);
+    driverRegister("Game of Life", gameOfLifeStart, NULL, gameOfLifeStop, driverCommonStatus, driverCommonProgress);
 }
 
 #endif

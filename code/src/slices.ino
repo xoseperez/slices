@@ -157,7 +157,7 @@ void setup() {
     scrollClockSetup();
     #endif
     #if ENABLE_DRIVER_WORD
-    wordClockSetup();
+    //wordClockSetup();
     #endif
     #if ENABLE_DRIVER_FIBONACCI
     fibonacciClockSetup();

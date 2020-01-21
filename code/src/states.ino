@@ -33,21 +33,15 @@ void stateSet(int state) {
 
 }
 
+CRGB stateColor(uint8_t state) {
+    if (STATE_WPS == state) return CRGB::Purple;
+    if (STATE_AP == state) return CRGB::Blue;
+    if (STATE_CONNECTING == state) return CRGB::Orange;
+    if (STATE_CONNECTED == state) return CRGB::Green;
+    if (STATE_ERROR == state) return CRGB::Red; 
+    return CRGB::Black;
+}
+
 void stateShow() {
-
-    CRGB color = CRGB::Black;
-    if (STATE_WPS == _state) color = CRGB::Purple;
-    if (STATE_AP == _state) color = CRGB::Blue;
-    if (STATE_CONNECTING == _state) color = CRGB::Orange;
-    if (STATE_CONNECTED == _state) color = CRGB::Green;
-    if (STATE_ERROR == _state) color = CRGB::Red;
-
-    #if defined(DEVICE_WORDCLOCK)
-        //
-    #elif defined(DEVICE_SCROLL_CIRCLE_CLOCK)
-        //
-    #else
-        matrixSetPixelColor(0, MATRIX_HEIGHT - 1, color);
-    #endif
-
+    driverStatus(_state);
 }

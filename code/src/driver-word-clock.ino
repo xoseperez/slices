@@ -9,16 +9,192 @@ Copyright (C) 2017 by Xose Pérez <xose dot perez at gmail dot com>
 #if ENABLE_DRIVER_WORD
 
 #include <FastLED_GFX.h>
+#include "driver-word-clock.h"
 
 #define LANGUAGE_CATALA     1
 #define LANGUAGE_ESPANOL    2
-#define LANGUAGE_ENGLISH    3
+
+int _word_previous_hour = -1;
+int _word_previous_minute = -1;
+unsigned int _wordclock_time_pattern[16] = {0};
 
 // -----------------------------------------------------------------------------
 // DRIVER
 // -----------------------------------------------------------------------------
 
-String wordClockCatalan(byte hour, byte minute) {
+/**
+ * Loads a word code into the time pattern
+ * @param  clockword code          a tupla defining the leds to be lit to form a word
+ * @param  unsigned  int *         LED pattern array representation
+ */
+void _wordClockLoadCode(clockword code, unsigned int * pattern) {
+   pattern[code.row] = pattern[code.row] | code.positions;
+}
+
+String _wordClockEspanol(byte hour, byte minute, unsigned int * pattern) {
+
+    /*
+
+    00 => en punto
+    01 => pasada/s
+    02 => pasada/s
+
+    03 => casi y cinco
+    04 => casi y cinco
+    05 => y cinco
+    06 => y cinco pasadas
+    07 => y cinco pasadas
+
+    08 => casi y diez
+    09 => casi y diez
+    10 => y diez
+    11 => y diez pasadas
+    12 => y diez pasadas
+
+    13 => casi y cuarto
+    14 => casi y cuarto
+    15 => y cuarto
+    16 => y cuarto pasadas
+    17 => y cuarto pasadas
+
+    18 => casi y veinte
+    19 => casi y veinte
+    20 => y veinte
+    21 => y veinte pasadas
+    22 => y veinte pasadas
+
+    23 => casi y veinticinco
+    24 => casi y veinticinco
+    25 => y veinticinco
+    26 => y veinticinco pasadas
+    27 => y veinticinco pasadas
+
+    28 => casi y media
+    29 => casi y media
+    30 => y media
+    31 => y media pasadas
+    32 => y media pasadas
+
+    33 => casi menos veinticinco
+    34 => casi menos veinticinco
+    35 => menos veinticinco
+    36 => menos veinticinco pasadas
+    37 => menos veinticinco pasadas
+
+    38 => casi menos veinte
+    39 => casi menos veinte
+    40 => menos veinte
+    41 => menos veinte pasadas
+    42 => menos veinte pasadas
+
+    43 => casi menos cuarto
+    44 => casi menos cuarto
+    45 => menos cuarto
+    46 => menos cuarto pasadas
+    47 => menos cuarto pasadas
+
+    48 => casi menos diez
+    49 => casi menos diez
+    50 => menos diez
+    51 => menos diez pasadas
+    52 => menos diez pasadas
+
+    53 => casi menos cinco
+    54 => casi menos cinco
+    55 => menos cinco
+    56 => menos cinco pasadas
+    57 => menos cinco pasadas
+
+    58 => casi
+    59 => casi
+
+    */
+
+    // indica si la hora se referencia a la actual o a la posterior
+    bool hour_is_current = (minute < 33);
+
+    // hora en formato 12 y referida
+    byte hour_12 = (hour > 12) ? hour - 12 : hour;
+    if (!hour_is_current) hour_12++;
+    if (hour_12 == 13) hour_12 = 1;
+
+    // indica si la hora es plural o singular
+    bool hour_is_singular = (hour_12 == 1);
+
+    // ARTICLE
+    if (hour_is_singular) {
+        _wordClockLoadCode((clockword) ESP_ES, pattern);
+        _wordClockLoadCode((clockword) ESP_LA, pattern);
+    } else {
+        _wordClockLoadCode((clockword) ESP_SON, pattern);
+        _wordClockLoadCode((clockword) ESP_LAS, pattern);
+    }
+
+    // BLOCKS
+    byte reference = ((minute + 2) / 5) % 12;
+    byte index = (minute + 2) % 5;
+    if (reference == 0) {
+        // NOP
+    } else if (reference < 7) {
+        _wordClockLoadCode((clockword) ESP_Y, pattern);
+    } else {
+        _wordClockLoadCode((clockword) ESP_MENOS, pattern);
+    }
+    if (reference ==  1) _wordClockLoadCode((clockword) ESP_CINCO_B, pattern);
+    if (reference ==  2) _wordClockLoadCode((clockword) ESP_DIEZ_B, pattern);
+    if (reference ==  3) _wordClockLoadCode((clockword) ESP_CUARTO, pattern);
+    if (reference ==  4) _wordClockLoadCode((clockword) ESP_VEINTE, pattern);
+    if (reference ==  5) _wordClockLoadCode((clockword) ESP_VEINTICINCO, pattern);
+    if (reference ==  6) _wordClockLoadCode((clockword) ESP_MEDIA, pattern);
+    if (reference ==  7) _wordClockLoadCode((clockword) ESP_VEINTICINCO, pattern);
+    if (reference ==  8) _wordClockLoadCode((clockword) ESP_VEINTE, pattern);
+    if (reference ==  9) _wordClockLoadCode((clockword) ESP_CUARTO, pattern);
+    if (reference == 10) _wordClockLoadCode((clockword) ESP_DIEZ_B, pattern);
+    if (reference == 11) _wordClockLoadCode((clockword) ESP_CINCO_B, pattern);
+
+    // MODIFIERS
+    if (index < 2) _wordClockLoadCode((clockword) ESP_CASI, pattern);
+    if (index > 2) {
+        if (hour_is_singular) {
+            _wordClockLoadCode((clockword) ESP_PASADA, pattern);
+        } else {
+            _wordClockLoadCode((clockword) ESP_PASADAS, pattern);
+        }
+    }
+    if (minute == 0) _wordClockLoadCode((clockword) ESP_EN_PUNTO, pattern);
+
+    // HORAS
+    switch (hour_12) {
+        case  1: _wordClockLoadCode((clockword) ESP_UNA, pattern); break;
+        case  2: _wordClockLoadCode((clockword) ESP_DOS, pattern); break;
+        case  3: _wordClockLoadCode((clockword) ESP_TRES, pattern); break;
+        case  4: _wordClockLoadCode((clockword) ESP_CUATRO, pattern); break;
+        case  5: _wordClockLoadCode((clockword) ESP_CINCO, pattern); break;
+        case  6: _wordClockLoadCode((clockword) ESP_SEIS, pattern); break;
+        case  7: _wordClockLoadCode((clockword) ESP_SIETE, pattern); break;
+        case  8: _wordClockLoadCode((clockword) ESP_OCHO, pattern); break;
+        case  9: _wordClockLoadCode((clockword) ESP_NUEVE, pattern); break;
+        case 10: _wordClockLoadCode((clockword) ESP_DIEZ, pattern); break;
+        case 11: _wordClockLoadCode((clockword) ESP_ONCE, pattern); break;
+        default: _wordClockLoadCode((clockword) ESP_DOCE, pattern); break;
+    }
+
+    // FRANJA HORARIA
+    _wordClockLoadCode((clockword) ESP_DE_F, pattern);
+    _wordClockLoadCode((clockword) ESP_LA_F, pattern);
+    if (hour < 6) {
+        _wordClockLoadCode((clockword) ESP_NOCHE, pattern);
+    } else if (hour < 13) {
+        _wordClockLoadCode((clockword) ESP_MANANA, pattern);
+    } else if (hour < 21) {
+        _wordClockLoadCode((clockword) ESP_TARDE, pattern);
+    } else {
+        _wordClockLoadCode((clockword) ESP_NOCHE, pattern);
+    }
+
+}
+
+String _wordClockCatala(byte hour, byte minute, unsigned int * pattern) {
 
     /*
 
@@ -90,7 +266,7 @@ String wordClockCatalan(byte hour, byte minute) {
 
     */
 
-    String output;
+    // Code from Wordclock project (https://github.com/xoseperez/wordclock)
 
     // indica si l'hora es referencia a l'actual o la posterior
     bool hour_is_current = (minute < 5);
@@ -108,118 +284,258 @@ String wordClockCatalan(byte hour, byte minute) {
 
     // VERB
     if (hour_is_singular) {
-        output += "ES";
+        _wordClockLoadCode((clockword) CAT_ES, pattern);
     } else {
-        output += "SON";
+        _wordClockLoadCode((clockword) CAT_SON, pattern);
     }
 
+    // EN PUNT
+    if (minute == 0) {
+        _wordClockLoadCode((clockword) CAT_EN_PUNT, pattern);
+    }
+
+    // PRIMERS MINUTS
+    if ((1 <= minute) && (minute <= 4)) {
+    if (hour_is_singular) {
+        _wordClockLoadCode((clockword) CAT_TOCADA, pattern);
+    } else {
+        _wordClockLoadCode((clockword) CAT_TOCADES, pattern);
+    }
+    if (minute > 2) {
+        _wordClockLoadCode((clockword) CAT_BEN, pattern);
+    }
+    }
     if (minute == 5) {
-        output += " VORA MIG QUART";
+        _wordClockLoadCode((clockword) CAT_VORA, pattern);
+        _wordClockLoadCode((clockword) CAT_MIG, pattern);
+        _wordClockLoadCode((clockword) CAT_QUART, pattern);
     }
 
     // FRANJA DEL MIG
+    //if ((6 <= minute) && (minute <= 53)) {
     if (6 <= minute) {
 
         // convenient words
-        String tocat = hour_is_singular ? String(" TOCAT") : String(" TOCATS");
+        clockword tocat = (hour_is_singular) ? (clockword) CAT_TOCAT : (clockword) CAT_TOCATS;
 
         byte quarts = (minute - 6) / 15;
         byte index = (minute - 6) % 15;
         if (index >= 3) quarts++;
 
-        if (index == 0 || index == 3 || index == 8 || index == 13) output += " VORA";
-
-        if (quarts == 0 && index < 3) output += " MIG";
-        if (quarts == 1) output += " UN";
-        if (quarts == 2) output += " DOS";
-        if (quarts == 3) output += " TRES";
-        if (quarts < 2) {
-            output += " QUART";
-        } else if (quarts < 4) {
-            output += " QUARTS";
+        if (quarts == 1) _wordClockLoadCode((clockword) CAT_UN_Q, pattern);
+        if (quarts == 2) _wordClockLoadCode((clockword) CAT_DOS_Q, pattern);
+        if (quarts == 3) _wordClockLoadCode((clockword) CAT_TRES_Q, pattern);
+        if (index < 3) {
+            if (quarts == 0) {
+                _wordClockLoadCode((clockword) CAT_MIG, pattern);
+            } else {
+                _wordClockLoadCode((clockword) CAT_I_MIG, pattern);
+            }
         }
-        if (quarts > 0 && index < 3) output += " I MIG";
+        if (quarts < 2) {
+            _wordClockLoadCode((clockword) CAT_QUART, pattern);
+        } else if (quarts < 4) {
+            _wordClockLoadCode((clockword) CAT_QUARTS, pattern);
+        }
 
-        if (index == 2 || index == 10 || index == 11) output += tocat;
-        if (index == 3 || index == 4) output += " MENYS CINC";
-        if (index == 5 || index == 6) output += " MENYS CINC" + tocat;
-        if (index == 7) output += " MENYS CINC BEN" + tocat;
-        if (index == 12) output += " BEN" + tocat;
-        if (index == 13 || index == 14) output += " I CINC";
+        switch (index) {
+
+            case 0:
+                _wordClockLoadCode((clockword) CAT_VORA, pattern);
+                break;
+
+            case 2:
+                _wordClockLoadCode(tocat, pattern);
+                break;
+
+            case 3:
+                _wordClockLoadCode((clockword) CAT_VORA, pattern);
+                _wordClockLoadCode((clockword) CAT_MENYS, pattern);
+                _wordClockLoadCode((clockword) CAT_CINC_Q, pattern);
+                break;
+
+            case 4:
+                _wordClockLoadCode((clockword) CAT_MENYS, pattern);
+                _wordClockLoadCode((clockword) CAT_CINC_Q, pattern);
+                break;
+
+            case 5:
+            case 6:
+                _wordClockLoadCode((clockword) CAT_MENYS, pattern);
+                _wordClockLoadCode((clockword) CAT_CINC_Q, pattern);
+                _wordClockLoadCode(tocat, pattern);
+                break;
+
+            case 7:
+                _wordClockLoadCode((clockword) CAT_MENYS, pattern);
+                _wordClockLoadCode((clockword) CAT_CINC_Q, pattern);
+                _wordClockLoadCode((clockword) CAT_BEN_Q, pattern);
+                _wordClockLoadCode(tocat, pattern);
+                break;
+
+            case 8:
+                _wordClockLoadCode((clockword) CAT_VORA, pattern);
+                break;
+
+            case 10:
+            case 11:
+                _wordClockLoadCode(tocat, pattern);
+                break;
+
+            case 12:
+                _wordClockLoadCode((clockword) CAT_BEN_Q, pattern);
+                _wordClockLoadCode(tocat, pattern);
+                break;
+
+            case 13:
+                _wordClockLoadCode((clockword) CAT_VORA, pattern);
+                _wordClockLoadCode((clockword) CAT_I, pattern);
+                _wordClockLoadCode((clockword) CAT_CINC_Q, pattern);
+                break;
+
+            case 14:
+                _wordClockLoadCode((clockword) CAT_I, pattern);
+                _wordClockLoadCode((clockword) CAT_CINC_Q, pattern);
+                break;
+
+        }
 
     }
+
+    // HORES
+    switch (hour_12) {
+        case  1: _wordClockLoadCode((clockword) CAT_UNA, pattern); break;
+        case  2: _wordClockLoadCode((clockword) CAT_DUES, pattern); break;
+        case  3: _wordClockLoadCode((clockword) CAT_TRES, pattern); break;
+        case  4: _wordClockLoadCode((clockword) CAT_QUATRE, pattern); break;
+        case  5: _wordClockLoadCode((clockword) CAT_CINC, pattern); break;
+        case  6: _wordClockLoadCode((clockword) CAT_SIS, pattern); break;
+        case  7: _wordClockLoadCode((clockword) CAT_SET, pattern); break;
+        case  8: _wordClockLoadCode((clockword) CAT_VUIT, pattern); break;
+        case  9: _wordClockLoadCode((clockword) CAT_NOU, pattern); break;
+        case 10: _wordClockLoadCode((clockword) CAT_DEU, pattern); break;
+        case 11: _wordClockLoadCode((clockword) CAT_ONZE, pattern); break;
+        default: _wordClockLoadCode((clockword) CAT_DOTZE, pattern); break;
+    }
+
 
     // PARTICULES DE LES HORES
     if (hour_with_article) {
         if (hour_is_singular) {
-            output += " LA";
+            _wordClockLoadCode((clockword) CAT_LA, pattern);
         } else {
-            output += " LES";
+            _wordClockLoadCode((clockword) CAT_LES, pattern);
         }
     } else {
-        if ((hour_12 != 1) && (hour_12 != 11)) {
-            output += " DE";
-        }
-    }
-
-    // HORES
-    if (hour_12 ==  1) output += (hour_with_article) ? " UNA" : " D'UNA";
-    if (hour_12 ==  2) output += " DUES";
-    if (hour_12 ==  3) output += " TRES";
-    if (hour_12 ==  4) output += " QUATRE";
-    if (hour_12 ==  5) output += " CINC";
-    if (hour_12 ==  6) output += " SIS";
-    if (hour_12 ==  7) output += " SET";
-    if (hour_12 ==  8) output += " VUIT";
-    if (hour_12 ==  9) output += " NOU";
-    if (hour_12 == 10) output += " DEU";
-    if (hour_12 == 11) output += (hour_with_article) ? " ONZE" : " D'ONZE";
-    if (hour_12 == 12) output += " DOTZE";
-
-    // EN PUNT
-    if (minute == 0) output += " EN PUNT";
-
-    // PRIMERS MINUTS
-    if ((1 <= minute) && (minute <= 4)) {
-        if (minute > 2) output += " BEN";
-        if (hour_is_singular) {
-            output += " TOCADA";
+        if (hour_12 == 1) {
+            _wordClockLoadCode((clockword) CAT_D_UNA, pattern);
+        } else if (hour_12 == 11) {
+            _wordClockLoadCode((clockword) CAT_D_ONZE, pattern);
         } else {
-            output += " TOCADES";
+            _wordClockLoadCode((clockword) CAT_DE, pattern);
         }
     }
 
     // FRANJA HORARIA
-    if (hour < 5) {
-        output += " DE LA NIT";
-    } else if (hour < 12) {
-        output += " DEL MATI";
-    } else if (hour < 20) {
-        output += " DE LA TARDA";
-    } else if (hour < 22) {
-        output += " DEL VESPRE";
+    if (hour < 6) {
+        _wordClockLoadCode((clockword) CAT_DE_F, pattern);
+        _wordClockLoadCode((clockword) CAT_LA_F, pattern);
+        _wordClockLoadCode((clockword) CAT_NIT, pattern);
+    } else if (hour < 13) {
+        _wordClockLoadCode((clockword) CAT_DEL, pattern);
+        _wordClockLoadCode((clockword) CAT_MATI, pattern);
+    } else if (hour < 21) {
+        _wordClockLoadCode((clockword) CAT_DE_F, pattern);
+        _wordClockLoadCode((clockword) CAT_LA_F, pattern);
+        _wordClockLoadCode((clockword) CAT_TARDA, pattern);
     } else {
-        output += " DE LA NIT";
+        _wordClockLoadCode((clockword) CAT_DE_F, pattern);
+        _wordClockLoadCode((clockword) CAT_LA_F, pattern);
+        _wordClockLoadCode((clockword) CAT_NIT, pattern);
     }
-
-    return output;
 
 }
 
-void wordClockStart() {
+void _wordLoadPatternInMatrix(unsigned int * pattern, unsigned long color) {
+    for (byte y=0; y < 16; y++) {
+        unsigned int value = 1;
+        for (byte x=0; x < 16; x++) {
+            if ((pattern[y] & value) > 0) {
+                matrixSetPixelColor(x, y, color);
+            }
+            value <<= 1;
+        }
+    }
+}
+
+void _wordUpdateClock() {
+   matrixClear();
+   _wordLoadPatternInMatrix(time_pattern, CRGB::Orange);
+   matrixRefresh();
+}
+
+bool _wordLoadPattern(uint8_t language, bool force = false) {
 
     RtcDateTime now = rtcGet();
-    int currentHour = now.Hour();
-    int currentMinute = now.Minute();
+    int current_minute = now.Minute();
+    int current_hour = now.Hour();
+    if ((!force) && (current_minute == _word_previous_minute) && (current_hour == _word_previous_hour)) return false;
+    _word_previous_minute = current_minute;
+    _word_previous_hour = current_hour;
 
-    String text = wordClockCatalan(currentHour, currentMinute);
+    // Reset time pattern
+    for (byte i=0; i<MATRIX_HEIGHT; i++) _wordclock_time_pattern[i] = 0;
 
-    matrixScroll(0, text.c_str(), true, wordClockStart);
+    // Load strings
+    if (language == LANGUAGE_CATALAN) {
+        _wordClockCatala(current_hour, current_minute, _wordclock_time_pattern);
+    } else {
+        _wordClockEspanol(current_hour, current_minute, _wordclock_time_pattern);
+    }
 
+    return true;
+
+}
+
+void wordClockStart(uint8_t language, bool moving) {
+    _word_previous_hour = -1;
+    _word_previous_minute = -1;
+}
+
+void wordClockLoop(uint8_t language, bool moving) {
+    if (_wordLoadPattern(language)) {
+        _wordUpdateClock();
+    }
 }
 
 void wordClockSetup() {
-    driverRegister("word-clock", wordClockStart, NULL, NULL);
+
+    driverRegister(
+        "WordClock Català", 
+        []() {
+            wordClockStart(LANGUAGE_CATALAN, false);
+        },
+        []() {
+            wordClockLoop(LANGUAGE_CATALAN, false);
+        }, 
+        NULL,
+        driverCommonStatus, 
+        driverCommonProgress
+    );
+
+    driverRegister(
+        "WordClock Español", 
+        []() {
+            wordClockStart(LANGUAGE_ESPANOL, false);
+        },
+        []() {
+            wordClockLoop(LANGUAGE_ESPANOL, false);
+        }, 
+        NULL, 
+        driverCommonStatus, 
+        driverCommonProgress
+    );
+
 }
 
 #endif

@@ -61,8 +61,20 @@ void circleClockLoop() {
 
 }
 
+void circleStatus(uint8_t value) {
+    CRGB color = stateColor(value);
+    matrixSetPixelColor(CIRCLE_START, color);
+}
+
+void circleProgress(uint8_t value) {
+    long num = CIRCLE_SIZE * value / 100;
+    for (unsigned char x=0; x<CIRCLE_SIZE; x++) {
+        if (num >= x) matrixSetPixelColor(CIRCLE_START + x, CRGB::Green);
+    }
+}
+
 void circleClockSetup() {
-    driverRegister("circle-clock", NULL, circleClockLoop, NULL);
+    driverRegister("Clock", NULL, circleClockLoop, NULL, circleStatus, circleProgress);
 }
 
 #endif

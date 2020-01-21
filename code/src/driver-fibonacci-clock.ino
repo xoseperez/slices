@@ -174,13 +174,15 @@ void fibonacciClockSetup() {
     fibonacci_colors[3] = CRGB::Blue;
 
     driverRegister(
-        "fibonacci-clock",
+        "Fibonacci clock",
         []{
             fibonacciPreviousMinute = 99;
             fibonacciClockLoop();
         },
         fibonacciClockLoop,
-        NULL
+        NULL,
+        driverCommonStatus, 
+        driverCommonProgress
     );
 
 }
