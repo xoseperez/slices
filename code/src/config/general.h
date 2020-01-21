@@ -78,6 +78,7 @@
     #define MATRIX_SIZE                 MATRIX_16x16
     #define ENABLE_DRIVER_WORDCLOCK     1
     #define DEVICE_NAME                 "WORDCLOCK"
+    #define STATE_NON_STICKY
 #endif
 
 #ifdef DEVICE_SCROLL_CIRCLE_CLOCK

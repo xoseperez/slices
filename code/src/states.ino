@@ -28,6 +28,11 @@ void stateSet(int state) {
     if (STATE_ERROR == state) {
        _state_ticker.once(5, stateSet, STATE_IDLE);
     }
+    #ifdef STATE_NON_STICKY
+    if ((STATE_CONNECTED == state) || (STATE_AP == state)) {
+       _state_ticker.once(5, stateSet, STATE_IDLE);
+    }
+    #endif
 
     matrixRefresh();
 
