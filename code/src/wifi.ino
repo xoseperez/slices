@@ -13,6 +13,7 @@ Ticker _wifi_off_ticker;
 uint8_t _wifi_previous_hour = 25;
 uint8_t _wifi_sync_mode = 0;
 uint8_t _wifi_hours_left = 0;
+bool _wifi_wps_in_progress = false;
 
 // -----------------------------------------------------------------------------
 // WIFI
@@ -300,15 +301,18 @@ void _wifiDebugCallback(justwifi_messages_t code, char * parameter) {
 
     if (code == MESSAGE_WPS_START) {
         DEBUG_MSG_P(PSTR("[WIFI] WPS started\n"));
+        _wifi_wps_in_progress = true;
         stateSet(STATE_WPS);
     }
 
     if (code == MESSAGE_WPS_SUCCESS) {
         _wifiSave();
+        _wifi_wps_in_progress = false;
         DEBUG_MSG_P(PSTR("[WIFI] WPS succeded!\n"));
     }
 
     if (code == MESSAGE_WPS_ERROR) {
+        _wifi_wps_in_progress = false;
         DEBUG_MSG_P(PSTR("[WIFI] WPS failed\n"));
     }
 
@@ -316,15 +320,18 @@ void _wifiDebugCallback(justwifi_messages_t code, char * parameter) {
 
     if (code == MESSAGE_SMARTCONFIG_START) {
         DEBUG_MSG_P(PSTR("[WIFI] Smart Config started\n"));
+        _wifi_wps_in_progress = true;
         stateSet(STATE_WPS);
     }
 
     if (code == MESSAGE_SMARTCONFIG_SUCCESS) {
         _wifiSave();
+        _wifi_wps_in_progress = false;
         DEBUG_MSG_P(PSTR("[WIFI] Smart Config succeded!\n"));
     }
 
     if (code == MESSAGE_SMARTCONFIG_ERROR) {
+        _wifi_wps_in_progress = false;
         DEBUG_MSG_P(PSTR("[WIFI] Smart Config failed\n"));
     }
 
@@ -422,6 +429,7 @@ void wifiLoop() {
     jw.loop();
 
     if (_wifi_sync_mode == 0) return;
+    if (_wifi_wps_in_progress) return;
     
     // checks at sharp hours
     RtcDateTime now = rtcGet();
