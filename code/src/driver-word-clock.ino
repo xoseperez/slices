@@ -16,6 +16,7 @@ Copyright (C) 2017 by Xose Pérez <xose dot perez at gmail dot com>
 
 int _word_previous_hour = -1;
 int _word_previous_minute = -1;
+bool _word_force = false;
 unsigned int _wordclock_time_pattern[16] = {0};
 
 // -----------------------------------------------------------------------------
@@ -456,6 +457,31 @@ void _wordClockCatala(byte hour, byte minute, unsigned int * pattern) {
 
 }
 
+void _wordClearPattern() {
+    for (byte i=0; i<MATRIX_HEIGHT; i++) _wordclock_time_pattern[i] = 0;
+}
+
+bool _wordLoadPattern(uint8_t language, bool force = false) {
+
+    RtcDateTime now = rtcGet();
+    int current_minute = now.Minute();
+    int current_hour = now.Hour();
+    if ((!force) && (current_minute == _word_previous_minute) && (current_hour == _word_previous_hour)) return false;
+    _word_previous_minute = current_minute;
+    _word_previous_hour = current_hour;
+
+    _wordClearPattern();
+
+    // Load strings
+    if (language == LANGUAGE_CATALAN) {
+        _wordClockCatala(current_hour, current_minute, _wordclock_time_pattern);
+    } else {
+        _wordClockEspanol(current_hour, current_minute, _wordclock_time_pattern);
+    }
+
+    return true;
+
+}
 void _wordLoadPatternInMatrix(unsigned int * pattern, unsigned long color) {
     for (byte y=0; y < MATRIX_HEIGHT; y++) {
         unsigned int value = pattern[y];
@@ -468,43 +494,199 @@ void _wordLoadPatternInMatrix(unsigned int * pattern, unsigned long color) {
     }
 }
 
+// matrix configuration
+#define UPDATE_MATRIX 30
+#define MATRIX_BIRTH_RATIO 75
+#define MATRIX_SPEED_MIN 4
+#define MATRIX_SPEED_MAX 2
+#define MATRIX_LENGTH_MIN 5
+#define MATRIX_LENGTH_MAX 20
+#define MATRIX_LIFE_MIN 10
+#define MATRIX_LIFE_MAX 40
+#define MATRIX_MAX_RAYS 60
+#define STICKY_COUNT 1000
+#define STICKY_PAUSE 10000
+#define STICKY_MAX 500
+
+CRGB getMatrixColor(byte current, byte total) {
+    byte green = map(current, 0, total, 255, 0);
+    byte red = current == 0 ? 255 : 0;
+    return CRGB(red, green, 0);
+}
+
+byte _wordCountLEDs() {
+
+    byte char_total = 0;
+
+    for (byte y=0; y<MATRIX_HEIGHT; y++) {
+        unsigned int row = _wordclock_time_pattern[y];
+        while (row>0) {
+            if (row & 1) char_total++;
+            row >>= 1;
+        }
+    }
+
+    return char_total;
+
+}
+
+void _wordRain(uint8_t language) {
+
+    static unsigned long count = 0;
+    static unsigned long next_update = millis();
+    static byte current_num_rays = 0;
+    static ray_struct ray[MATRIX_MAX_RAYS];
+    static unsigned int countdown = 0;
+
+    static bool sticky = false;
+    static bool create = true;
+    static byte char_total = 0;
+    static byte char_so_far = 0;
+    static unsigned int local_pattern[MATRIX_HEIGHT];
+
+    byte i = 0;
+
+    if (!_word_force && (next_update > millis())) return;
+    _word_force = false;
+
+    if (create && (current_num_rays < MATRIX_MAX_RAYS)) {
+        bool do_create = random(0, 100) < MATRIX_BIRTH_RATIO;
+        if (do_create) {
+            i=0;
+            while (ray[i].life > 0) i++;
+            ray[i].x = random(0, MATRIX_WIDTH);
+            ray[i].y = random(-5, 5);
+            ray[i].speed = random(MATRIX_SPEED_MAX, MATRIX_SPEED_MIN);
+            ray[i].length = random(MATRIX_LENGTH_MIN, MATRIX_LENGTH_MAX);
+            ray[i].life = random(MATRIX_LIFE_MIN, MATRIX_LIFE_MAX);
+            current_num_rays++;
+        }
+    }
+
+    if ((!sticky) && (count > STICKY_COUNT)) {
+        sticky = true;
+        countdown = STICKY_MAX;
+        _wordLoadPattern(language);
+        char_total = _wordCountLEDs();
+        for (i=0; i<MATRIX_HEIGHT; i++) local_pattern[i] = 0;
+        char_so_far = 0;
+    }
+
+    matrixClear();
+
+    for (i=0; i<MATRIX_MAX_RAYS; i++) {
+        if (ray[i].life > 0) {
+
+            // update ray position depending on speed
+            if (count % ray[i].speed == 0) {
+                ray[i].y = ray[i].y + 1;
+                ray[i].life = ray[i].life - 1;
+            }
+
+            // get colors for each pixel
+            byte start = 0;
+            if (ray[i].life <= ray[i].length) {
+                start = ray[i].length - ray[i].life ;
+            }
+
+            bool active = false;
+            for (byte p=start; p<ray[i].length; p++) {
+                int y = ray[i].y - p;
+                if (0 <= y && y < MATRIX_HEIGHT) {
+                    matrixSetPixelColor(ray[i].x, y, getMatrixColor(p, ray[i].length));
+                }
+                active |= (y < MATRIX_HEIGHT);
+            }
+            if (!active) ray[i].life = 0;
+
+            // we are in sticky mode
+            if (sticky) {
+
+                byte y = ray[i].y;
+
+                if (0 <= y && y < MATRIX_HEIGHT) {
+
+                    // check if we have hit a led in the _wordclock_time_pattern matrix
+                    unsigned int value = 1 << ray[i].x;
+                    if ((_wordclock_time_pattern[y] & value) == value) {
+
+                        // check if we have already hit this led before
+                        if ((local_pattern[y] & value) != value) {
+
+                            // kill the ray
+                            ray[i].life = ray[i].length - 1;
+                            char_so_far++;
+
+                            // save it into local pattern
+                            local_pattern[y] = local_pattern[y] + value;
+
+                            // are we done?
+                            if (char_so_far == char_total) {
+                                create = false;
+                            }
+
+                        }
+
+                    }
+
+                }
+
+            }
+
+            // free ray if dead
+            if (ray[i].life == 0) current_num_rays--;
+
+        }
+    
+    }
+
+    if (sticky) {
+        if (countdown > 0) {
+            if (--countdown == 0) {
+                for (i=0; i<MATRIX_HEIGHT; i++) local_pattern[i] = _wordclock_time_pattern[i];
+                create = false;
+            }
+        }
+    }
+
+    if (sticky or !create) {
+        // draw hit leds
+        _wordLoadPatternInMatrix(local_pattern, CRGB::Yellow);
+    }
+
+    matrixRefresh();
+
+    if ((current_num_rays == 0) and !create) {
+        sticky = false;
+        create = true;
+        count = 0;
+        next_update += STICKY_PAUSE;
+    } else {
+        count++;
+        next_update += UPDATE_MATRIX;
+    }
+
+}
+
 void _wordUpdateClock() {
     matrixClear();
     _wordLoadPatternInMatrix(_wordclock_time_pattern, CRGB::Orange);
     matrixRefresh();
 }
 
-bool _wordLoadPattern(uint8_t language, bool force = false) {
-
-    RtcDateTime now = rtcGet();
-    int current_minute = now.Minute();
-    int current_hour = now.Hour();
-    if ((!force) && (current_minute == _word_previous_minute) && (current_hour == _word_previous_hour)) return false;
-    _word_previous_minute = current_minute;
-    _word_previous_hour = current_hour;
-
-    // Reset time pattern
-    for (byte i=0; i<MATRIX_HEIGHT; i++) _wordclock_time_pattern[i] = 0;
-
-    // Load strings
-    if (language == LANGUAGE_CATALAN) {
-        _wordClockCatala(current_hour, current_minute, _wordclock_time_pattern);
-    } else {
-        _wordClockEspanol(current_hour, current_minute, _wordclock_time_pattern);
-    }
-
-    return true;
-
-}
-
-void wordClockStart(uint8_t language, bool moving) {
+void wordClockStart() {
     _word_previous_hour = -1;
     _word_previous_minute = -1;
+    _word_force = true;
 }
 
 void wordClockLoop(uint8_t language, bool moving) {
-    if (_wordLoadPattern(language)) {
-        _wordUpdateClock();
+    if (moving) {
+        _wordRain(language);
+    } else {
+        if (_wordLoadPattern(language)) {
+            _wordUpdateClock();
+        }
     }
 }
 
@@ -516,9 +698,7 @@ void wordClockSetup() {
 
     driverRegister(
         "WordClock Català", 
-        []() {
-            wordClockStart(LANGUAGE_CATALAN, false);
-        },
+        wordClockStart,
         []() {
             wordClockLoop(LANGUAGE_CATALAN, false);
         }, 
@@ -529,11 +709,31 @@ void wordClockSetup() {
 
     driverRegister(
         "WordClock Español", 
-        []() {
-            wordClockStart(LANGUAGE_SPANISH, false);
-        },
+        wordClockStart,
         []() {
             wordClockLoop(LANGUAGE_SPANISH, false);
+        }, 
+        NULL, 
+        NULL, 
+        driverCommonProgress
+    );
+
+    driverRegister(
+        "WordClock Català Matrix", 
+        wordClockStart,
+        []() {
+            wordClockLoop(LANGUAGE_CATALAN, true);
+        }, 
+        NULL,
+        NULL, 
+        driverCommonProgress
+    );
+
+    driverRegister(
+        "WordClock Español Matrix", 
+        wordClockStart,
+        []() {
+            wordClockLoop(LANGUAGE_SPANISH, true);
         }, 
         NULL, 
         NULL, 
