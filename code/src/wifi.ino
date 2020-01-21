@@ -251,7 +251,6 @@ void _wifiDebugCallback(justwifi_messages_t code, char * parameter) {
 
     if (code == MESSAGE_CONNECTING) {
         DEBUG_MSG_P(PSTR("[WIFI] Connecting to %s\n"), parameter);
-        stateSet(STATE_CONNECTING);
     }
 
     if (code == MESSAGE_CONNECT_WAITING) {
@@ -260,18 +259,14 @@ void _wifiDebugCallback(justwifi_messages_t code, char * parameter) {
 
     if (code == MESSAGE_CONNECT_FAILED) {
         DEBUG_MSG_P(PSTR("[WIFI] Could not connect to %s\n"), parameter);
-        stateSet(STATE_ERROR);
     }
 
     if (code == MESSAGE_CONNECTED) {
         wifiDebug(WIFI_STA);
-        stateSet(STATE_CONNECTED);
-        _wifi_off_ticker.once(WIFI_OFF_AFTER, preOff);
     }
 
     if (code == MESSAGE_DISCONNECTED) {
         DEBUG_MSG_P(PSTR("[WIFI] Disconnected\n"));
-        stateSet(STATE_IDLE);
     }
 
     // -------------------------------------------------------------------------
@@ -282,37 +277,27 @@ void _wifiDebugCallback(justwifi_messages_t code, char * parameter) {
 
     if (code == MESSAGE_ACCESSPOINT_CREATED) {
         wifiDebug(WIFI_AP);
-        stateSet(STATE_AP);
-        _wifi_off_ticker.once(WIFI_OFF_AFTER, preOff);
     }
 
     if (code == MESSAGE_ACCESSPOINT_FAILED) {
         DEBUG_MSG_P(PSTR("[WIFI] Could not create access point\n"));
-        stateSet(STATE_ERROR);
     }
 
     if (code == MESSAGE_ACCESSPOINT_DESTROYED) {
-        _wifiUpdateSoftAP();
         DEBUG_MSG_P(PSTR("[WIFI] Access point destroyed\n"));
-        stateSet(STATE_IDLE);
     }
 
     // -------------------------------------------------------------------------
 
     if (code == MESSAGE_WPS_START) {
         DEBUG_MSG_P(PSTR("[WIFI] WPS started\n"));
-        _wifi_wps_in_progress = true;
-        stateSet(STATE_WPS);
     }
 
     if (code == MESSAGE_WPS_SUCCESS) {
-        _wifiSave();
-        _wifi_wps_in_progress = false;
         DEBUG_MSG_P(PSTR("[WIFI] WPS succeded!\n"));
     }
 
     if (code == MESSAGE_WPS_ERROR) {
-        _wifi_wps_in_progress = false;
         DEBUG_MSG_P(PSTR("[WIFI] WPS failed\n"));
     }
 
@@ -320,13 +305,9 @@ void _wifiDebugCallback(justwifi_messages_t code, char * parameter) {
 
     if (code == MESSAGE_SMARTCONFIG_START) {
         DEBUG_MSG_P(PSTR("[WIFI] Smart Config started\n"));
-        _wifi_wps_in_progress = true;
-        stateSet(STATE_WPS);
     }
 
     if (code == MESSAGE_SMARTCONFIG_SUCCESS) {
-        _wifiSave();
-        _wifi_wps_in_progress = false;
         DEBUG_MSG_P(PSTR("[WIFI] Smart Config succeded!\n"));
     }
 
@@ -343,7 +324,6 @@ void _wifiDebugCallback(justwifi_messages_t code, char * parameter) {
 
     if (code == MESSAGE_TURNING_OFF) {
         DEBUG_MSG_P(PSTR("[WIFI] Turning WiFi OFF\n"));
-        stateSet(STATE_IDLE);
     }
 
 }
@@ -402,17 +382,73 @@ void wifiSetup() {
 
     wifiRegister([](justwifi_messages_t code, char * parameter) {
 
-        // NTP connection / disconnection
-        if (code == MESSAGE_CONNECTED) {
-            ntpConnect();
-        }
-        if ((code == MESSAGE_DISCONNECTED) || (code == MESSAGE_TURNING_OFF)) {
-            ntpDisconnect();
+        if (code == MESSAGE_CONNECTING) {
+            stateSet(STATE_CONNECTING);
         }
 
-        // Display notifications
-        if (code == MESSAGE_CONNECTED || code == MESSAGE_DISCONNECTED || code == MESSAGE_ACCESSPOINT_CREATED) {
+        if (code == MESSAGE_CONNECT_FAILED) {
+            stateSet(STATE_ERROR);
+        }
+
+        if (code == MESSAGE_CONNECTED) {
+            stateSet(STATE_CONNECTED);
+            ntpConnect();
             matrixRefresh();
+            _wifi_off_ticker.once(WIFI_OFF_AFTER, preOff);
+        }
+
+        if (code == MESSAGE_DISCONNECTED) {
+            stateSet(STATE_IDLE);
+            ntpDisconnect();
+            matrixRefresh();
+        }
+
+        if (code == MESSAGE_ACCESSPOINT_CREATED) {
+            stateSet(STATE_AP);
+            matrixRefresh();
+            _wifi_off_ticker.once(WIFI_OFF_AFTER, preOff);
+        }
+
+        if (code == MESSAGE_ACCESSPOINT_FAILED) {
+            stateSet(STATE_ERROR);
+        }
+
+        if (code == MESSAGE_ACCESSPOINT_DESTROYED) {
+            _wifiUpdateSoftAP();
+            stateSet(STATE_IDLE);
+        }
+
+        if (code == MESSAGE_WPS_START) {
+            _wifi_wps_in_progress = true;
+            stateSet(STATE_WPS);
+        }
+
+        if (code == MESSAGE_WPS_SUCCESS) {
+            _wifiSave();
+            _wifi_wps_in_progress = false;
+        }
+
+        if (code == MESSAGE_WPS_ERROR) {
+            _wifi_wps_in_progress = false;
+        }
+
+        if (code == MESSAGE_SMARTCONFIG_START) {
+            _wifi_wps_in_progress = true;
+            stateSet(STATE_WPS);
+        }
+
+        if (code == MESSAGE_SMARTCONFIG_SUCCESS) {
+            _wifiSave();
+            _wifi_wps_in_progress = false;
+        }
+
+        if (code == MESSAGE_SMARTCONFIG_ERROR) {
+            _wifi_wps_in_progress = false;
+        }
+
+        if (code == MESSAGE_TURNING_OFF) {
+            ntpDisconnect();
+            stateSet(STATE_IDLE);
         }
 
     });
@@ -422,6 +458,8 @@ void wifiSetup() {
         startWPS();
     }
 
+    _wifi_hours_left = getSetting("timeEvery", TIME_SYNC_EVERY).toInt();
+
 }
 
 void wifiLoop() {
@@ -429,6 +467,7 @@ void wifiLoop() {
     jw.loop();
 
     if (_wifi_sync_mode == 0) return;
+    if (jw.networkCount() == 0) return;
     if (_wifi_wps_in_progress) return;
     
     // checks at sharp hours
