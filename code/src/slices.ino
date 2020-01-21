@@ -151,25 +151,25 @@ void setup() {
 
     // drivers
     #if ENABLE_DRIVER_BASIC
-    basicClockSetup();
+        basicClockSetup();
     #endif
     #if ENABLE_DRIVER_SCROLL
-    scrollClockSetup();
+        scrollClockSetup();
     #endif
     #if ENABLE_DRIVER_WORDCLOCK
-    wordClockSetup();
+        wordClockSetup();
     #endif
     #if ENABLE_DRIVER_FIBONACCI
-    fibonacciClockSetup();
+        fibonacciClockSetup();
     #endif
     #if ENABLE_DRIVER_BINARY
-    binaryClockSetup();
+        binaryClockSetup();
     #endif
     #if ENABLE_DRIVER_GAME_OF_LIFE
-    gameOfLifeSetup();
+        gameOfLifeSetup();
     #endif
     #if ENABLE_DRIVER_CANVAS
-    canvasSetup();
+        canvasSetup();
     #endif
 
     driverSetup();
