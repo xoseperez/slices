@@ -42,11 +42,13 @@ unsigned char driverRegister(const char * name, blindCallback startFn, blindCall
 }
 
 void driverStart() {
+    if (_drivers.size() <= _currentDriver) return;
     if (_drivers[_currentDriver].startFn) (_drivers[_currentDriver].startFn)();
 }
 
 void driverLoop() {
 
+    if (_drivers.size() <= _currentDriver) return;
     if (_drivers[_currentDriver].loopFn) (_drivers[_currentDriver].loopFn)();
 
     // Clock code
@@ -61,6 +63,7 @@ void driverStop() {
     matrixStopScroll();
     matrixClear();
     matrixRefresh();
+    if (_drivers.size() <= _currentDriver) return;
     if (_drivers[_currentDriver].stopFn) (_drivers[_currentDriver].stopFn)();
 }
 
@@ -74,14 +77,13 @@ int driverFind(const char * name) {
 }
 
 void driverSet(unsigned char i) {
-    if (i <= _drivers.size() - 1) {
-        driverStop();
-        _currentDriver = i; 
-        driverStart();
-        DEBUG_MSG_P(PSTR("[DRIVER] Set to '%s'\n"), _drivers[_currentDriver].name);
-        EEPROMr.write(EEPROM_DRIVER, _currentDriver);
-        EEPROMr.commit();
-    }
+    if (_drivers.size() <= i) return;
+    driverStop();
+    _currentDriver = i; 
+    driverStart();
+    DEBUG_MSG_P(PSTR("[DRIVER] Set to '%s'\n"), _drivers[_currentDriver].name);
+    EEPROMr.write(EEPROM_DRIVER, _currentDriver);
+    EEPROMr.commit();
 }
 
 unsigned char driverCount() {
@@ -89,6 +91,7 @@ unsigned char driverCount() {
 } 
 
 void driverNext() {
+    if (_drivers.size() == 0) return;
     unsigned char nextDriver = (_currentDriver + 1) % _drivers.size();
     driverSet(nextDriver);
 }
@@ -106,9 +109,11 @@ void driverCommonProgress(unsigned char value) {
 }
 
 void driverStatus(unsigned char value) {
+    if (_drivers.size() <= _currentDriver) return;
     if (_drivers[_currentDriver].statusFn) (_drivers[_currentDriver].statusFn)(value);
 }
 
 void driverProgress(unsigned char value) {
+    if (_drivers.size() <= _currentDriver) return;
     if (_drivers[_currentDriver].progressFn) (_drivers[_currentDriver].progressFn)(value);
 }
