@@ -34,9 +34,16 @@ void basicClockLoop() {
 
 }
 
+void basicClockStart() {
+    RtcDateTime now = rtcGet();
+    char buffer[6];
+    snprintf(buffer, 6, "%02u:%02u", now.Hour(), now.Minute());
+    matrixScroll(0, buffer, true, basicClockStart);
+}
+
 void basicClockSetup() {
     driverRegister(
-        "basic-clock",
+        "Basic Clock",
         []{
             basicClockPrevious = 99;
             basicClockLoop();
@@ -49,17 +56,6 @@ void basicClockSetup() {
 }
 
 #else
-
-void basicClockStart() {
-    RtcDateTime now = rtcGet();
-    char buffer[6];
-    snprintf(buffer, 6, "%02u:%02u", now.Hour(), now.Minute());
-    matrixScroll(0, buffer, true, basicClockStart);
-}
-
-void basicClockSetup() {
-    driverRegister("Basic clock", basicClockStart, NULL, NULL, driverCommonStatus, driverCommonProgress);
-}
 
 #endif
 
