@@ -144,7 +144,7 @@ function getData(form) {
     });
     
     delete(data['filename']);
-    console.log(data);
+
     return data;
 
 }
