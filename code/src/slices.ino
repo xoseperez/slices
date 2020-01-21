@@ -153,6 +153,9 @@ void setup() {
     #if ENABLE_DRIVER_BASIC
     basicClockSetup();
     #endif
+    #if ENABLE_DRIVER_SCROLL
+    scrollClockSetup();
+    #endif
     #if ENABLE_DRIVER_WORD
     wordClockSetup();
     #endif

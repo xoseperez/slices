@@ -36,7 +36,7 @@ void otaSetup() {
 
     ArduinoOTA.onProgress([](unsigned int progress, unsigned int total) {
 
-        #ifdef FIBONACCI
+        #ifdef DEVICE_FIBONACCI
             
             long num = MATRIX_WIDTH * progress / total;
             for (unsigned char x=0; x<MATRIX_WIDTH; x++) {

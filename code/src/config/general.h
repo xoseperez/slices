@@ -56,51 +56,85 @@
 #define SDA_PIN                 2
 #define SCL_PIN                 0
 
+//--------------------------------------------------------------------------------
+// MATRIX
+//--------------------------------------------------------------------------------
+
+#define MATRIX_8x8                  1
+#define MATRIX_16x16                2
+#define MATRIX_16x8                 3
+
 //------------------------------------------------------------------------------
-// DRIVERS
+// DEVICE - DRIVERS
 //------------------------------------------------------------------------------
 
-#define ENABLE_DRIVER_FIBONACCI         1
-#define ENABLE_DRIVER_BASIC             1
-#define ENABLE_DRIVER_BINARY            1
-#define ENABLE_DRIVER_WORD              1
-#define ENABLE_DRIVER_GAME_OF_LIFE      1
-#define ENABLE_DRIVER_CANVAS            1
-#define ENABLE_DRIVER_CIRCLE            1
-
-#if FIBONACCI
-
-    #undef ENABLE_DRIVER_BASIC
-    #define ENABLE_DRIVER_BASIC         0
-
-    #undef ENABLE_DRIVER_BINARY
-    #define ENABLE_DRIVER_BINARY        0
-
-    #undef ENABLE_DRIVER_WORD
-    #define ENABLE_DRIVER_WORD          0
-
-    #undef ENABLE_DRIVER_GAME_OF_LIFE
-    #define ENABLE_DRIVER_GAME_OF_LIFE  0
-
-    #undef ENABLE_DRIVER_CANVAS
-    #define ENABLE_DRIVER_CANVAS        0
-
+#ifdef DEVICE_FIBONACCI
+    #define MATRIX_SIZE                 MATRIX_8x8
+    #define ENABLE_DRIVER_FIBONACCI     1
     #define DEVICE_NAME                 "FIBONACCI"
-
 #endif
 
-#if CIRCLE_SIZE > 0
-
-    #undef ENABLE_DRIVER_GAME_OF_LIFE
-    #define ENABLE_DRIVER_GAME_OF_LIFE  0
-
+#ifdef DEVICE_WORDCLOCK
+    #define MATRIX_SIZE                 MATRIX_16x16
+    #define ENABLE_DRIVER_WORDCLOCK     1
+    #define DEVICE_NAME                 "WORDCLOCK"
 #endif
 
-#if CIRCLE_SIZE == 0
+#ifdef DEVICE_SCROLL_CIRCLE_CLOCK
+    #define MATRIX_SIZE                 MATRIX_16x8
+    #define CIRCLE_SIZE                 60
+    #define ENABLE_DRIVER_SCROLL        1
+    #define ENABLE_DRIVER_CIRCLE        1
+    #define DEVICE_NAME                 "SCROLLCLOCK"
+#endif
 
-    #undef ENABLE_DRIVER_CIRCLE
-    #define ENABLE_DRIVER_CIRCLE        0
+#ifdef DEVICE_BIG_CANVAS
+    #define MATRIX_SIZE                 MATRIX_16x16
+    #define ENABLE_DRIVER_BASIC         1
+    #define ENABLE_DRIVER_BINARY        1
+    #define ENABLE_DRIVER_CANVAS        1
+    #define ENABLE_DRIVER_GAME_OF_LIFE  1
+    #define DEVICE_NAME                 "CLOCK"
+#endif
 
+#ifdef DEVICE_SMALL_CANVAS
+    #define MATRIX_SIZE                 MATRIX_8x8
+    #define ENABLE_DRIVER_BASIC         1
+    #define ENABLE_DRIVER_BINARY        1
+    #define ENABLE_DRIVER_CANVAS        1
+    #define ENABLE_DRIVER_GAME_OF_LIFE  1
+    #define DEVICE_NAME                 "CLOCK"
+#endif
+
+// Disable all the rest
+
+#ifndef ENABLE_DRIVER_FIBONACCI
+#define ENABLE_DRIVER_FIBONACCI         0
+#endif
+#ifndef ENABLE_DRIVER_BASIC
+#define ENABLE_DRIVER_BASIC             0
+#endif
+#ifndef ENABLE_DRIVER_BINARY
+#define ENABLE_DRIVER_BINARY            0
+#endif
+#ifndef ENABLE_DRIVER_WORD
+#define ENABLE_DRIVER_WORD              0
+#endif
+#ifndef ENABLE_DRIVER_SCROLL
+#define ENABLE_DRIVER_SCROLL            0
+#endif
+#ifndef ENABLE_DRIVER_GAME_OF_LIFE
+#define ENABLE_DRIVER_GAME_OF_LIFE      0
+#endif
+#ifndef ENABLE_DRIVER_CANVAS
+#define ENABLE_DRIVER_CANVAS            0
+#endif
+#ifndef ENABLE_DRIVER_CIRCLE
+#define ENABLE_DRIVER_CIRCLE            0
+#endif
+
+#ifndef DEVICE_NAME
+#error "Unknown device!"
 #endif
 
 //--------------------------------------------------------------------------------
@@ -108,10 +142,6 @@
 //--------------------------------------------------------------------------------
 
 #define MATRIX_PIN                  4
-
-#define MATRIX_8x8                  1
-#define MATRIX_16x16                2
-#define MATRIX_16x8                 3
 
 #ifndef MATRIX_SIZE
 #define MATRIX_SIZE                 MATRIX_8x8
@@ -124,22 +154,12 @@
 #if MATRIX_SIZE == MATRIX_8x8
 #define MATRIX_WIDTH                8
 #define MATRIX_HEIGHT               8
-#ifndef DEVICE_NAME
-    #define DEVICE_NAME             "SLICES-SMALL"
-#endif
 #elif MATRIX_SIZE == MATRIX_16x16
 #define MATRIX_WIDTH                16
 #define MATRIX_HEIGHT               16
-#ifndef DEVICE_NAME
-    #define DEVICE_NAME             "SLICES-BIG"
-#endif
 #elif MATRIX_SIZE == MATRIX_16x8
 #define MATRIX_WIDTH                16
 #define MATRIX_HEIGHT               8
-#endif
-
-#ifndef DEVICE_NAME
-    #define DEVICE_NAME             "SLICES-CLOCK"
 #endif
 
 #define MATRIX_CHIPSET              WS2812B

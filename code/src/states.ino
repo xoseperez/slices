@@ -42,7 +42,11 @@ void stateShow() {
     if (STATE_CONNECTED == _state) color = CRGB::Green;
     if (STATE_ERROR == _state) color = CRGB::Red;
 
-    #ifdef FIBONACCI
+    #if defined(DEVICE_WORDCLOCK)
+        //
+    #elif defined(DEVICE_SCROLL_CIRCLE_CLOCK)
+        //
+    #else
         matrixSetPixelColor(0, MATRIX_HEIGHT - 1, color);
     #endif
 

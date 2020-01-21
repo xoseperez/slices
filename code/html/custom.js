@@ -9,6 +9,7 @@ var matrixHeight = 8;
 var matrixStep;
 var drawingColor = "#ffffff";
 
+var urls = {};
 var timer;
 
 // ----------------------------------------------------------------------------
@@ -560,6 +561,71 @@ function createCheckboxes() {
 
 }
 
+function initUrls(root) {
+
+    var paths = ["ws", "auth"];
+
+    urls["root"] = root;
+    paths.forEach(function(path) {
+        urls[path] = new URL(path, root);
+        urls[path].protocol = root.protocol;
+    });
+
+    if (root.protocol == "https:") {
+        urls.ws.protocol = "wss:";
+    } else {
+        urls.ws.protocol = "ws:";
+    }
+
+}
+
+function doReload(milliseconds) {
+    setTimeout(function() {
+        window.location.reload();
+    }, parseInt(milliseconds, 10));
+}
+
+function connectToURL(url) {
+
+    initUrls(url);
+
+    fetch(urls.auth.href, {
+        'method': 'GET',
+        'cors': true,
+        'credentials': 'same-origin'
+    }).then(function(response) {
+        // Nothing to do, reload page and retry
+        if (response.status != 200) {
+            doReload(5000);
+            return;
+        }
+        // update websock object
+        if (websock) { websock.close(); }
+        websock = new WebSocket(urls.ws.href);
+        websock.onmessage = function(evt) {
+            var data = getJson(evt.data.replace(/\n/g, "\\n").replace(/\r/g, "\\r").replace(/\t/g, "\\t"));
+            if (data) {
+                processData(data);
+            }
+        };
+    }).catch(function(error) {
+        console.log(error);
+        doReload(5000);
+    });
+
+}
+
+function connect(host) {
+    if (!host.startsWith("http:") && !host.startsWith("https:")) {
+        host = "http://" + host;
+    }
+    connectToURL(new URL(host));
+}
+
+function connectToCurrentURL() {
+    connectToURL(new URL(window.location));
+}
+
 function connect(h, p) {
 
     if (typeof h === 'undefined') {
@@ -591,6 +657,7 @@ function connect(h, p) {
 function init() {
 
     createCheckboxes();
+    timer = setInterval(updateTime, 1000);
 
     $("#menuLink").on('click', toggleMenu);
     $(".button-update").on('click', doUpdate);
@@ -632,20 +699,20 @@ function init() {
     });
     loadTimeZones();
 
-    var host = window.location.hostname;
-    var port = location.port;
+    // don't autoconnect when opening from filesystem
+    if (window.location.protocol === "file:") {
+        return;
+    }
+    
+    // Check host param in query string
+    var search = new URLSearchParams(window.location.search);
+    host = search.get("host");
 
-    $.ajax({
-        'method': 'GET',
-        'url': 'http://' + host + ':' + port + '/auth'
-    }).done(function(data) {
-        connect();
-    }).fail(function(){
-        $("#credentials").show();
-    });
-
-
-    timer = setInterval(updateTime, 1000);
+    if (host !== null) {
+        connect(host);
+    } else {
+        connectToCurrentURL();
+    }
 
 }
 
