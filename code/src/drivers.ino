@@ -24,6 +24,7 @@ unsigned char _currentDriver = 0;
 
 void driverSetup() {
     unsigned char driver = EEPROMr.read(EEPROM_DRIVER);
+    if (_drivers.size() <= driver) driver = 0;
     driverSet(driver);
 }
 
@@ -92,22 +93,22 @@ void driverNext() {
     driverSet(nextDriver);
 }
 
-void driverCommonStatus(uint8_t value) {
+void driverCommonStatus(unsigned char value) {
     CRGB color = stateColor(value);
     matrixSetPixelColor(0, MATRIX_HEIGHT - 1, color);
 }
 
-void driverCommonProgress(uint8_t value) {
+void driverCommonProgress(unsigned char value) {
     long num = MATRIX_WIDTH * value / 100;
     for (unsigned char x=0; x<MATRIX_WIDTH; x++) {
         if (num >= x) matrixSetPixelColor(x, MATRIX_HEIGHT-1, CRGB::Green);
     }
 }
 
-void driverStatus(uint8_t value) {
+void driverStatus(unsigned char value) {
     if (_drivers[_currentDriver].statusFn) (_drivers[_currentDriver].statusFn)(value);
 }
 
-void driverProgress(uint8_t value) {
+void driverProgress(unsigned char value) {
     if (_drivers[_currentDriver].progressFn) (_drivers[_currentDriver].progressFn)(value);
 }

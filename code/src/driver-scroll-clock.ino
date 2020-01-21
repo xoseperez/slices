@@ -10,8 +10,8 @@ Copyright (C) 2017 by Xose Pérez <xose dot perez at gmail dot com>
 
 #include <FastLED_GFX.h>
 
-#define LANGUAGE_CATALA     1
-#define LANGUAGE_ESPANOL    2
+#define LANGUAGE_CATALAN     1
+#define LANGUAGE_SPANISH    2
 #define LANGUAGE_ENGLISH    3
 
 // -----------------------------------------------------------------------------

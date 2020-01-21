@@ -33,6 +33,14 @@ void stateSet(int state) {
 
 }
 
+void stateSound(uint8_t state) {
+    if (STATE_WPS == state) sound(400, 500);
+    if (STATE_AP == state) sound(400, 500);
+    if (STATE_CONNECTING == state) sound(500, 500);
+    if (STATE_CONNECTED == state) sound(600, 500);
+    if (STATE_ERROR == state) sound(700, 500);
+}
+
 CRGB stateColor(uint8_t state) {
     if (STATE_WPS == state) return CRGB::Purple;
     if (STATE_AP == state) return CRGB::Blue;

@@ -6,13 +6,13 @@ Copyright (C) 2017 by Xose Pérez <xose dot perez at gmail dot com>
 
 */
 
-#if ENABLE_DRIVER_WORD
+#if ENABLE_DRIVER_WORDCLOCK
 
 #include <FastLED_GFX.h>
 #include "driver-word-clock.h"
 
-#define LANGUAGE_CATALA     1
-#define LANGUAGE_ESPANOL    2
+#define LANGUAGE_CATALAN    1
+#define LANGUAGE_SPANISH    2
 
 int _word_previous_hour = -1;
 int _word_previous_minute = -1;
@@ -31,7 +31,7 @@ void _wordClockLoadCode(clockword code, unsigned int * pattern) {
    pattern[code.row] = pattern[code.row] | code.positions;
 }
 
-String _wordClockEspanol(byte hour, byte minute, unsigned int * pattern) {
+void _wordClockEspanol(byte hour, byte minute, unsigned int * pattern) {
 
     /*
 
@@ -194,7 +194,7 @@ String _wordClockEspanol(byte hour, byte minute, unsigned int * pattern) {
 
 }
 
-String _wordClockCatala(byte hour, byte minute, unsigned int * pattern) {
+void _wordClockCatala(byte hour, byte minute, unsigned int * pattern) {
 
     /*
 
@@ -457,21 +457,21 @@ String _wordClockCatala(byte hour, byte minute, unsigned int * pattern) {
 }
 
 void _wordLoadPatternInMatrix(unsigned int * pattern, unsigned long color) {
-    for (byte y=0; y < 16; y++) {
-        unsigned int value = 1;
-        for (byte x=0; x < 16; x++) {
-            if ((pattern[y] & value) > 0) {
-                matrixSetPixelColor(x, y, color);
+    for (byte y=0; y < MATRIX_HEIGHT; y++) {
+        unsigned int value = pattern[y];
+        for (byte x=0; x < MATRIX_WIDTH; x++) {
+            if ((value & 1) == 1) {
+                matrixSetPixelColor(MATRIX_WIDTH - x - 1, y, color);
             }
-            value <<= 1;
+            value >>= 1;
         }
     }
 }
 
 void _wordUpdateClock() {
-   matrixClear();
-   _wordLoadPatternInMatrix(time_pattern, CRGB::Orange);
-   matrixRefresh();
+    matrixClear();
+    _wordLoadPatternInMatrix(_wordclock_time_pattern, CRGB::Orange);
+    matrixRefresh();
 }
 
 bool _wordLoadPattern(uint8_t language, bool force = false) {
@@ -508,6 +508,10 @@ void wordClockLoop(uint8_t language, bool moving) {
     }
 }
 
+void wordClockStatus(unsigned char state) {
+    stateSound(state);
+}
+
 void wordClockSetup() {
 
     driverRegister(
@@ -519,20 +523,20 @@ void wordClockSetup() {
             wordClockLoop(LANGUAGE_CATALAN, false);
         }, 
         NULL,
-        driverCommonStatus, 
+        NULL, 
         driverCommonProgress
     );
 
     driverRegister(
         "WordClock Español", 
         []() {
-            wordClockStart(LANGUAGE_ESPANOL, false);
+            wordClockStart(LANGUAGE_SPANISH, false);
         },
         []() {
-            wordClockLoop(LANGUAGE_ESPANOL, false);
+            wordClockLoop(LANGUAGE_SPANISH, false);
         }, 
         NULL, 
-        driverCommonStatus, 
+        NULL, 
         driverCommonProgress
     );
 

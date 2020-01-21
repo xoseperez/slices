@@ -6,7 +6,7 @@ Copyright (C) 2017-2020 by Xose Pérez <xose dot perez at gmail dot com>
 
 */
 
-#if ENABLE_DRIVER_WORD
+#if ENABLE_DRIVER_WORDCLOCK
 
 // CATALAN
 
@@ -15,8 +15,8 @@ Copyright (C) 2017-2020 by Xose Pérez <xose dot perez at gmail dot com>
 #define CAT_VORA        {0, 0x00F0}
 
 #define CAT_UN_Q        {1, 0xC000}
-#define CAT_DOS_Q       {1, 0x3800}
-#define CAT_TRES_Q      {1, 0x0780}
+#define CAT_DOS_Q       {1, 0x1C00} // {1, 0x3800}
+#define CAT_TRES_Q      {1, 0x03C0} // {1, 0x0780}
 #define CAT_MIG         {1, 0x0007}
 
 #define CAT_QUART       {2, 0xF800}

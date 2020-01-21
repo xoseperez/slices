@@ -117,8 +117,8 @@
 #ifndef ENABLE_DRIVER_BINARY
 #define ENABLE_DRIVER_BINARY            0
 #endif
-#ifndef ENABLE_DRIVER_WORD
-#define ENABLE_DRIVER_WORD              0
+#ifndef ENABLE_DRIVER_WORDCLOCK
+#define ENABLE_DRIVER_WORDCLOCK         0
 #endif
 #ifndef ENABLE_DRIVER_SCROLL
 #define ENABLE_DRIVER_SCROLL            0

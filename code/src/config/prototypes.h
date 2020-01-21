@@ -75,7 +75,7 @@ Stream & terminalSerial();
 #include <FastLED_Matrix.h>
 FastLED_Matrix * getMatrix();
 typedef std::function<void(void)> blindCallback;
-typedef std::function<void(uint8_t)> paramCallback;
+typedef std::function<void(unsigned char)> paramCallback;
 
 // -----------------------------------------------------------------------------
 // DRIVERS

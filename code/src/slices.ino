@@ -132,7 +132,7 @@ void setup() {
     rtcSetup();
     webSetup();
     buttonSetup();
-    //soundSetup();
+    soundSetup();
 
     delay(500);
 
@@ -156,8 +156,8 @@ void setup() {
     #if ENABLE_DRIVER_SCROLL
     scrollClockSetup();
     #endif
-    #if ENABLE_DRIVER_WORD
-    //wordClockSetup();
+    #if ENABLE_DRIVER_WORDCLOCK
+    wordClockSetup();
     #endif
     #if ENABLE_DRIVER_FIBONACCI
     fibonacciClockSetup();
