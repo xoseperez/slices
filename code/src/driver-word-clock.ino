@@ -691,7 +691,12 @@ void wordClockLoop(uint8_t language, bool moving) {
 }
 
 void wordClockStatus(unsigned char state) {
-    stateSound(state);
+    CRGB color = CRGB(0, 0, 32);
+    matrixSetPixelColor(6, 2, 1 == state ? color : CRGB::Black);
+    matrixSetPixelColor(4, 3, 2 == state ? color : CRGB::Black);
+    matrixSetPixelColor(8, 3, 3 == state ? color : CRGB::Black);
+    matrixSetPixelColor(9, 3, 4 == state ? color : CRGB::Black);
+    matrixSetPixelColor(9, 8, 5 == state ? color : CRGB::Black);
 }
 
 void wordClockSetup() {
@@ -703,7 +708,7 @@ void wordClockSetup() {
             wordClockLoop(LANGUAGE_CATALAN, false);
         }, 
         NULL,
-        NULL, 
+        wordClockStatus, 
         driverCommonProgress
     );
 
@@ -714,7 +719,7 @@ void wordClockSetup() {
             wordClockLoop(LANGUAGE_SPANISH, false);
         }, 
         NULL, 
-        NULL, 
+        wordClockStatus, 
         driverCommonProgress
     );
 
@@ -725,7 +730,7 @@ void wordClockSetup() {
             wordClockLoop(LANGUAGE_CATALAN, true);
         }, 
         NULL,
-        NULL, 
+        wordClockStatus, 
         driverCommonProgress
     );
 
@@ -736,7 +741,7 @@ void wordClockSetup() {
             wordClockLoop(LANGUAGE_SPANISH, true);
         }, 
         NULL, 
-        NULL, 
+        wordClockStatus, 
         driverCommonProgress
     );
 
