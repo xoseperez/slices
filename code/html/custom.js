@@ -595,7 +595,8 @@ function connectToURL(url) {
         'credentials': 'same-origin'
     }).then(function(response) {
         // Nothing to do, reload page and retry
-        if (response.status != 200) {
+        if ((response.status < 200) || (210 < response.status)) {
+            console.log("response.status = " + response.status);
             doReload(5000);
             return;
         }

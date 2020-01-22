@@ -25,7 +25,7 @@ void gaugeClockLoop() {
     int current_minute = now.Minute();
     int current_hour = now.Hour();
 
-    unsigned int hour = ((current_hour % 12) * 60 + current_minute) / 12;
+    int hour = ((current_hour % 12) * 60 + current_minute) / 12;
     //if (_gauge_clock_hour == hour) return;
     _gauge_clock_hour = hour;
     _gauge_clock_peak = (_gauge_clock_peak + 1) % CIRCLE_SIZE;

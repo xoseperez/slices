@@ -83,7 +83,6 @@ gulp.task('buildfs_inline', ['clean'], function() {
         .pipe(favicon())
         .pipe(inline({
             base: 'html/',
-            js: uglify,
             css: [cleancss, inlineImages],
             disabledTypes: ['svg', 'img']
         }))
@@ -91,7 +90,7 @@ gulp.task('buildfs_inline', ['clean'], function() {
             collapseWhitespace: true,
             removeComments: true,
             minifyCSS: true,
-            minifyJS: true
+            minifyJS: false   // breaks when true :( 
         }))
         .pipe(gzip())
         .pipe(gulp.dest(dataFolder));
