@@ -47,16 +47,8 @@ void driverStart() {
 }
 
 void driverLoop() {
-
     if (_drivers.size() <= _currentDriver) return;
     if (_drivers[_currentDriver].loopFn) (_drivers[_currentDriver].loopFn)();
-
-    // Clock code
-    #if ENABLE_DRIVER_CIRCLE
-        //circleClockLoop();
-        //matrixRefresh();
-    #endif
-
 }
 
 void driverStop() {
@@ -104,7 +96,7 @@ void driverCommonStatus(unsigned char value) {
 void driverCommonProgress(unsigned char value) {
     long num = MATRIX_WIDTH * value / 100;
     for (unsigned char x=0; x<MATRIX_WIDTH; x++) {
-        if (num >= x) matrixSetPixelColor(x, MATRIX_HEIGHT-1, CRGB::Green);
+        matrixSetPixelColor(x, MATRIX_HEIGHT-1, (num >= x) ? CRGB::Green : 0x080808);
     }
 }
 

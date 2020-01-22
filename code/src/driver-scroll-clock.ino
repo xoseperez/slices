@@ -10,15 +10,171 @@ Copyright (C) 2017 by Xose Pérez <xose dot perez at gmail dot com>
 
 #include <FastLED_GFX.h>
 
-#define LANGUAGE_CATALAN     1
-#define LANGUAGE_SPANISH    2
-#define LANGUAGE_ENGLISH    3
-
 // -----------------------------------------------------------------------------
 // DRIVER
 // -----------------------------------------------------------------------------
 
-String scrollClockCatalan(byte hour, byte minute) {
+String _scrollClockSpanish(byte hour, byte minute) {
+
+    /*
+
+    00 => en punto
+    01 => pasada/s
+    02 => pasada/s
+
+    03 => casi y cinco
+    04 => casi y cinco
+    05 => y cinco
+    06 => y cinco pasadas
+    07 => y cinco pasadas
+
+    08 => casi y diez
+    09 => casi y diez
+    10 => y diez
+    11 => y diez pasadas
+    12 => y diez pasadas
+
+    13 => casi y cuarto
+    14 => casi y cuarto
+    15 => y cuarto
+    16 => y cuarto pasadas
+    17 => y cuarto pasadas
+
+    18 => casi y veinte
+    19 => casi y veinte
+    20 => y veinte
+    21 => y veinte pasadas
+    22 => y veinte pasadas
+
+    23 => casi y veinticinco
+    24 => casi y veinticinco
+    25 => y veinticinco
+    26 => y veinticinco pasadas
+    27 => y veinticinco pasadas
+
+    28 => casi y media
+    29 => casi y media
+    30 => y media
+    31 => y media pasadas
+    32 => y media pasadas
+
+    33 => casi menos veinticinco
+    34 => casi menos veinticinco
+    35 => menos veinticinco
+    36 => menos veinticinco pasadas
+    37 => menos veinticinco pasadas
+
+    38 => casi menos veinte
+    39 => casi menos veinte
+    40 => menos veinte
+    41 => menos veinte pasadas
+    42 => menos veinte pasadas
+
+    43 => casi menos cuarto
+    44 => casi menos cuarto
+    45 => menos cuarto
+    46 => menos cuarto pasadas
+    47 => menos cuarto pasadas
+
+    48 => casi menos diez
+    49 => casi menos diez
+    50 => menos diez
+    51 => menos diez pasadas
+    52 => menos diez pasadas
+
+    53 => casi menos cinco
+    54 => casi menos cinco
+    55 => menos cinco
+    56 => menos cinco pasadas
+    57 => menos cinco pasadas
+
+    58 => casi
+    59 => casi
+
+    */
+
+    String output;
+
+    // indica si la hora se referencia a la actual o a la posterior
+    bool hour_is_current = (minute < 33);
+
+    // hora en formato 12 y referida
+    byte hour_12 = (hour > 12) ? hour - 12 : hour;
+    if (!hour_is_current) hour_12++;
+    if (hour_12 == 13) hour_12 = 1;
+
+    // indica si la hora es plural o singular
+    bool hour_is_singular = (hour_12 == 1);
+
+    // ARTICLE
+    if (hour_is_singular) {
+        output += "ES LA";
+    } else {
+        output += "SON LAS";
+    }
+
+    // HORAS
+    switch (hour_12) {
+        case  1: output += " UNA"; break;
+        case  2: output += " DOS"; break;
+        case  3: output += " TRES"; break;
+        case  4: output += " CUATRO"; break;
+        case  5: output += " CINCO"; break;
+        case  6: output += " SEIS"; break;
+        case  7: output += " SIETE"; break;
+        case  8: output += " OCHO"; break;
+        case  9: output += " NUEVE"; break;
+        case 10: output += " DIEZ"; break;
+        case 11: output += " ONCE"; break;
+        default: output += " DOCE"; break;
+    }
+
+    // BLOCKS
+    byte reference = ((minute + 2) / 5) % 12;
+    byte index = (minute + 2) % 5;
+    if (reference == 0) {
+        // NOP
+    } else if (reference < 7) {
+        output += " Y";
+    } else {
+        output += " MENOS";
+        reference = 12 - reference;
+    }
+    if (reference ==  1) output += " CINCO";
+    if (reference ==  2) output += " DIEZ";
+    if (reference ==  3) output += " CUARTO";
+    if (reference ==  4) output += " VEINTE";
+    if (reference ==  5) output += " VEINTICINCO";
+    if (reference ==  6) output += " MEDIA";
+
+    // MODIFIERS
+    if (index < 2) output += " CASI";
+    if (index > 2) {
+        if (hour_is_singular) {
+            output += " PASADA";
+        } else {
+            output += " PASADAS";
+        }
+    }
+    if (minute == 0) output += " EN PUNTO";
+
+    // FRANJA HORARIA
+    output += " DE LA";
+    if (hour < 6) {
+        output += " NOCHE";
+    } else if (hour < 13) {
+        output += " MAÑANA";
+    } else if (hour < 21) {
+        output += " TARDE";
+    } else {
+        output += " NOCHE";
+    }
+
+    return output;
+
+}
+
+String _scrollClockCatalan(byte hour, byte minute) {
 
     /*
 
@@ -206,20 +362,30 @@ String scrollClockCatalan(byte hour, byte minute) {
 
 }
 
-void scrollClockStart() {
-
+void scrollClockStart(uint8_t language) {
+    
     RtcDateTime now = rtcGet();
     int currentHour = now.Hour();
     int currentMinute = now.Minute();
-
-    String text = scrollClockCatalan(currentHour, currentMinute);
-
-    matrixScroll(0, text.c_str(), true, scrollClockStart);
+    
+    String text;
+    if (LANGUAGE_CATALAN == language) {
+        text = _scrollClockCatalan(currentHour, currentMinute);
+    } else if (LANGUAGE_SPANISH == language) {
+        text = _scrollClockSpanish(currentHour, currentMinute);
+    } else {
+        text = String("");
+    }
+    
+    matrixScroll(0, text.c_str(), true, [language]() {
+        scrollClockStart(language);
+    });
 
 }
 
 void scrollClockSetup() {
-    driverRegister("Scroll clock", scrollClockStart, NULL, NULL, driverCommonStatus, driverCommonProgress);
+    driverRegister("Scroll Clock Catalan", []() { scrollClockStart(LANGUAGE_CATALAN); }, NULL, NULL, driverCommonStatus, driverCommonProgress);
+    driverRegister("Scroll Clock Spanish", []() { scrollClockStart(LANGUAGE_SPANISH); }, NULL, NULL, driverCommonStatus, driverCommonProgress);
 }
 
 #endif

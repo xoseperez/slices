@@ -25,6 +25,9 @@ void stateSet(int state) {
     DEBUG_MSG_P(PSTR("[STATE] State: %d\n"), _state);
 
     _state_ticker.detach();
+    if (STATE_IDLE == state) { 
+        _state_ticker.detach();
+    }
     if (STATE_ERROR == state) {
        _state_ticker.once(5, stateSet, STATE_IDLE);
     }
@@ -56,5 +59,5 @@ CRGB stateColor(uint8_t state) {
 }
 
 void stateShow() {
-    driverStatus(_state);
+    if (STATE_IDLE != _state) driverStatus(_state);
 }

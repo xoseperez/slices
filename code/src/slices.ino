@@ -171,6 +171,12 @@ void setup() {
     #if ENABLE_DRIVER_CANVAS
         canvasSetup();
     #endif
+    #if ENABLE_DRIVER_CIRCLE
+        circleClockSetup();
+    #endif
+    #if ENABLE_DRIVER_GAUGE
+        gaugeClockSetup();
+    #endif
 
     driverSetup();
 
@@ -190,10 +196,5 @@ void loop() {
     terminalLoop();
     
     driverLoop();
-
-    // Clock code
-    #if ENABLE_DRIVER_CIRCLE
-        //circleClockLoop();
-    #endif
 
 }

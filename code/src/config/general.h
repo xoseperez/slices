@@ -20,6 +20,10 @@
 #define TIME_SYNC_EVERY         6           // in hours (can be > 24)
 #define TIME_SYNC_WHEN          20          // at 20:00
 
+#define LANGUAGE_CATALAN        1
+#define LANGUAGE_SPANISH        2
+#define LANGUAGE_ENGLISH        3
+
 //--------------------------------------------------------------------------------
 // DEBUG
 //--------------------------------------------------------------------------------
@@ -86,7 +90,9 @@
     #define CIRCLE_SIZE                 60
     #define ENABLE_DRIVER_SCROLL        1
     #define ENABLE_DRIVER_CIRCLE        1
+    #define ENABLE_DRIVER_GAUGE         1
     #define DEVICE_NAME                 "CLOCK"
+    #define STATE_NON_STICKY
 #endif
 
 #ifdef DEVICE_BIG_CANVAS
@@ -132,6 +138,9 @@
 #endif
 #ifndef ENABLE_DRIVER_CIRCLE
 #define ENABLE_DRIVER_CIRCLE            0
+#endif
+#ifndef ENABLE_DRIVER_GAUGE
+#define ENABLE_DRIVER_GAUGE             0
 #endif
 
 #ifndef DEVICE_NAME
@@ -210,9 +219,6 @@
 #define WEBSERVER_PORT          80
 #define DNS_PORT                53
 #define ENABLE_MDNS             1
-
-#define WEB_MODE_NORMAL         0
-#define WEB_MODE_PASSWORD       1
 
 // -----------------------------------------------------------------------------
 // OTA

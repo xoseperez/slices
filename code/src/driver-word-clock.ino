@@ -11,9 +11,6 @@ Copyright (C) 2017 by Xose Pérez <xose dot perez at gmail dot com>
 #include <FastLED_GFX.h>
 #include "driver-word-clock.h"
 
-#define LANGUAGE_CATALAN    1
-#define LANGUAGE_SPANISH    2
-
 int _word_previous_hour = -1;
 int _word_previous_minute = -1;
 bool _word_force = false;
@@ -32,7 +29,7 @@ void _wordClockLoadCode(clockword code, unsigned int * pattern) {
    pattern[code.row] = pattern[code.row] | code.positions;
 }
 
-void _wordClockEspanol(byte hour, byte minute, unsigned int * pattern) {
+void _wordClockSpanish(byte hour, byte minute, unsigned int * pattern) {
 
     /*
 
@@ -195,7 +192,7 @@ void _wordClockEspanol(byte hour, byte minute, unsigned int * pattern) {
 
 }
 
-void _wordClockCatala(byte hour, byte minute, unsigned int * pattern) {
+void _wordClockCatalan(byte hour, byte minute, unsigned int * pattern) {
 
     /*
 
@@ -474,9 +471,9 @@ bool _wordLoadPattern(uint8_t language, bool force = false) {
 
     // Load strings
     if (language == LANGUAGE_CATALAN) {
-        _wordClockCatala(current_hour, current_minute, _wordclock_time_pattern);
+        _wordClockCatalan(current_hour, current_minute, _wordclock_time_pattern);
     } else {
-        _wordClockEspanol(current_hour, current_minute, _wordclock_time_pattern);
+        _wordClockSpanish(current_hour, current_minute, _wordclock_time_pattern);
     }
 
     return true;
@@ -702,7 +699,7 @@ void wordClockStatus(unsigned char state) {
 void wordClockSetup() {
 
     driverRegister(
-        "WordClock Català", 
+        "WordClock Catalan", 
         wordClockStart,
         []() {
             wordClockLoop(LANGUAGE_CATALAN, false);
@@ -713,7 +710,7 @@ void wordClockSetup() {
     );
 
     driverRegister(
-        "WordClock Español", 
+        "WordClock Spanish", 
         wordClockStart,
         []() {
             wordClockLoop(LANGUAGE_SPANISH, false);
@@ -724,7 +721,7 @@ void wordClockSetup() {
     );
 
     driverRegister(
-        "WordClock Català Matrix", 
+        "WordClock Catalan Matrix", 
         wordClockStart,
         []() {
             wordClockLoop(LANGUAGE_CATALAN, true);
@@ -735,7 +732,7 @@ void wordClockSetup() {
     );
 
     driverRegister(
-        "WordClock Español Matrix", 
+        "WordClock Spanish Matrix", 
         wordClockStart,
         []() {
             wordClockLoop(LANGUAGE_SPANISH, true);

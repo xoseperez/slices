@@ -28,11 +28,12 @@ blindCallback _endScroll;
 // SETUP
 // -----------------------------------------------------------------------------
 
-unsigned int getTextWidth(const char * text) {
-    int16_t x1, y1;
-    uint16_t w, h;
-    _matrix->getTextBounds((char *) text, 0, 0, &x1, &y1, &w, &h);
-    return w;
+uint16_t getTextWidth(const char * text) {
+    return strlen(text) * 6;
+    //int16_t x1, y1;
+    //uint16_t w, h;
+    //_matrix->getTextBounds((char *) text, 0, 0, &x1, &y1, &w, &h);
+    //return w;
 }
 
 void matrixWrite(int x, int y, const char * text, unsigned long color) {
@@ -70,7 +71,7 @@ void matrixLoop() {
         _scrollX = _matrix->width();
     }
 
-    FastLED.clear();
+    matrixClear();
     matrixWrite(_scrollX, _scrollY, _text, CRGB::Red);
     matrixRefresh();
 
@@ -80,11 +81,6 @@ void matrixRefresh(bool show_state) {
 
     // Show current state on display
     if (show_state) stateShow();
-
-    // Clock code
-    #if ENABLE_DRIVER_CIRCLE
-        circleClockLoop();
-    #endif
 
     FastLED.show();
 
@@ -118,6 +114,12 @@ void matrixAddPixelColor(unsigned int index, CRGB color) {
 void matrixSetPixelColor(unsigned int index, CRGB color) {
     if (0 <= index && index < MATRIX_LEDS) {
         _leds[index] = color;
+    }
+}
+
+void matrixDimPixelColor(unsigned int index, uint8_t fraction) {
+    if (0 <= index && index < MATRIX_LEDS) {
+        _leds[index] %= fraction;
     }
 }
 
