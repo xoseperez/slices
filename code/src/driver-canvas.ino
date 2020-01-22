@@ -2,7 +2,7 @@
 
 CANVAS DRIVER
 
-Copyright (C) 2017 by Xose Pérez <xose dot perez at gmail dot com>
+Copyright (C) 2017-2020 by Xose Pérez <xose dot perez at gmail dot com>
 
 */
 

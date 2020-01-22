@@ -2,7 +2,7 @@
 
 SOUND MODULE
 
-Copyright (C) 2016 by Xose Pérez <xose at tarpunacoop dot org>
+Copyright (C) 2016-2020 by Xose Pérez <xose at tarpunacoop dot org>
 
 */
 
