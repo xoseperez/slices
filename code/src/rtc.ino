@@ -56,8 +56,27 @@ void rtcSetup() {
     rtcDebug();
 
     terminalRegisterCommand(F("TIME"), [](Embedis* e) {
+
+        if (e->argc == 2) {
+            
+            String param = String(e->argv[1]);
+            int h, m, s;
+            int n = sscanf(param.c_str(), "%d:%d:%d", &h, &m, &s);
+            if (3 == n) {
+                RtcDateTime old_date = rtcGet();
+                RtcDateTime new_date = RtcDateTime(
+                    old_date.Year(),
+                    old_date.Month(),
+                    old_date.Day(),
+                    h, m, s
+                );
+                rtc.SetDateTime(new_date);
+            }
+        }
+
         rtcDebug();
         terminalOK();
+
     });
 
 }
