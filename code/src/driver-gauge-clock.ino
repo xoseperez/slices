@@ -17,9 +17,10 @@ int16_t _gauge_clock_peak = 0;
 
 void gaugeClockLoop() {
 
-    static uint8_t counter = 0;
-    if (counter++ < 20) return;
-    counter = 0;
+    static uint32_t last = 0;
+    if (millis() - last < 16) return;
+    last = millis();
+    if (_gauge_clock_peak % 15 == 0) last += 10; // fix rounding 1000/60 = 0.1666666
 
     RtcDateTime now = rtcGet();
     int current_minute = now.Minute();
@@ -38,7 +39,7 @@ void gaugeClockLoop() {
         uint8_t fraction = 255 - distance * 25;
         matrixDimPixelColor(CIRCLE_START + index, fraction);
     }
-
+    
     matrixRefresh();
 
 }

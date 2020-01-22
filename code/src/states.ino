@@ -59,5 +59,5 @@ CRGB stateColor(uint8_t state) {
 }
 
 void stateShow() {
-    if (STATE_IDLE != _state) driverStatus(_state);
+    driverStatus(_state);
 }

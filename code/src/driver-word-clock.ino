@@ -530,7 +530,8 @@ byte _wordCountLEDs() {
 void _wordRain(uint8_t language) {
 
     static unsigned long count = 0;
-    static unsigned long next_update = millis();
+    static unsigned long last = 0;
+    static unsigned long next = 0;
     static byte current_num_rays = 0;
     static ray_struct ray[MATRIX_MAX_RAYS];
     static unsigned int countdown = 0;
@@ -543,7 +544,8 @@ void _wordRain(uint8_t language) {
 
     byte i = 0;
 
-    if (!_word_force && (next_update > millis())) return;
+    if (!_word_force && (millis() - last < next)) return;
+    last = millis();
     _word_force = false;
 
     if (create && (current_num_rays < MATRIX_MAX_RAYS)) {
@@ -638,7 +640,7 @@ void _wordRain(uint8_t language) {
     }
 
     if (sticky) {
-        if (countdown > 0) {
+        if (countdown > 0) {    
             if (--countdown == 0) {
                 for (i=0; i<MATRIX_HEIGHT; i++) local_pattern[i] = _wordclock_time_pattern[i];
                 create = false;
@@ -657,10 +659,10 @@ void _wordRain(uint8_t language) {
         sticky = false;
         create = true;
         count = 0;
-        next_update += STICKY_PAUSE;
+        next = STICKY_PAUSE;
     } else {
         count++;
-        next_update += UPDATE_MATRIX;
+        next = UPDATE_MATRIX;
     }
 
 }
