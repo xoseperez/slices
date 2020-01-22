@@ -362,6 +362,103 @@ String _scrollClockCatalan(byte hour, byte minute) {
 
 }
 
+String _scrollClockEnglish(byte hour, byte minute) {
+
+    String output;
+
+    // indica si l'hora es referencia a l'actual o la posterior
+    bool hour_is_current = (minute < 31);
+
+    // hora en format 12 i referida
+    byte hour_12 = (hour > 12) ? hour - 12 : hour;
+    if (!hour_is_current) hour_12++;
+    if (hour_12 == 13) hour_12 = 1;
+
+    // minuts referits a l'hora
+    if (minute > 30) minute = 60 - minute;
+
+    // VERB
+    output += "IT'S";
+
+    if (minute > 0) {
+
+        if (1 == minute) output += " ONE";
+        if (2 == minute) output += " TWO";
+        if (3 == minute) output += " THREE";
+        if (4 == minute) output += " FOUR";
+        if (5 == minute) output += " FIVE";
+        if (6 == minute) output += " SIX";
+        if (7 == minute) output += " SEVEN";
+        if (8 == minute) output += " EIGHT";
+        if (9 == minute) output += " NINE";
+        if (10 == minute) output += " TEN";
+        if (11 == minute) output += " ELEVEN";
+        if (12 == minute) output += " TWELVE";
+        if (13 == minute) output += " THIRTEEN";
+        if (14 == minute) output += " FOURTEEN";
+        if (15 == minute) output += " A QUARTER";
+        if (16 == minute) output += " SIXTEEN";
+        if (17 == minute) output += " SEVENTEEN";
+        if (18 == minute) output += " EIGHTEEN";
+        if (19 == minute) output += " NINETEEN";
+        if (20 == minute) output += " TWENTY";
+        if (21 == minute) output += " TWENTYONE";
+        if (22 == minute) output += " TWENTYTWO";
+        if (23 == minute) output += " TWENTYTHREE";
+        if (24 == minute) output += " TWENTYFOUR";
+        if (25 == minute) output += " TWENTYFIVE";
+        if (26 == minute) output += " TWENTYSIX";
+        if (27 == minute) output += " TWENTYSEVEN";
+        if (28 == minute) output += " TWENTYEIGHT";
+        if (29 == minute) output += " TWENTYNINE";
+        if (30 == minute) output += " HALF";
+
+        if (hour_is_current) {
+            output += " PAST";
+        } else {
+            output += " TO";
+        }
+
+    }
+
+    // Hour
+    if (0 == hour_12) output += " MIDNIGHT";
+    if (1 == hour_12) output += " ONE";
+    if (2 == hour_12) output += " TWO";
+    if (3 == hour_12) output += " THREE";
+    if (4 == hour_12) output += " FOUR";
+    if (5 == hour_12) output += " FIVE";
+    if (6 == hour_12) output += " SIX";
+    if (7 == hour_12) output += " SEVEN";
+    if (8 == hour_12) output += " EIGHT";
+    if (9 == hour_12) output += " NINE";
+    if (10 == hour_12) output += " TEN";
+    if (11 == hour_12) output += " ELEVEN";
+    if (12 == hour_12) output += " NOON";
+
+
+    // EN PUNT
+    if ((minute == 0) && (0 != hour_12) && (12 != hour_12)) {
+        output += " O'CLOCK'";
+    }
+
+    // FRANJA HORARIA
+    if (hour < 5) {
+        output += " IN THE NIGHT";
+    } else if (hour < 12) {
+        output += " IN THE MORNING";
+    } else if (hour < 20) {
+        output += " IN THE AFTERNOON";
+    } else if (hour < 22) {
+        output += " IN THE EVENING";
+    } else {
+        output += " IN THE NIGHT";
+    }
+
+    return output;
+
+}
+
 void scrollClockStart(uint8_t language) {
     
     RtcDateTime now = rtcGet();
@@ -373,6 +470,8 @@ void scrollClockStart(uint8_t language) {
         text = _scrollClockCatalan(currentHour, currentMinute);
     } else if (LANGUAGE_SPANISH == language) {
         text = _scrollClockSpanish(currentHour, currentMinute);
+    } else if (LANGUAGE_ENGLISH == language) {
+        text = _scrollClockEnglish(currentHour, currentMinute);
     } else {
         text = String("");
     }
@@ -386,6 +485,7 @@ void scrollClockStart(uint8_t language) {
 void scrollClockSetup() {
     driverRegister("Scroll Clock Catalan", []() { scrollClockStart(LANGUAGE_CATALAN); }, NULL, NULL, driverCommonStatus, driverCommonProgress);
     driverRegister("Scroll Clock Spanish", []() { scrollClockStart(LANGUAGE_SPANISH); }, NULL, NULL, driverCommonStatus, driverCommonProgress);
+    driverRegister("Scroll Clock English", []() { scrollClockStart(LANGUAGE_ENGLISH); }, NULL, NULL, driverCommonStatus, driverCommonProgress);
 }
 
 #endif

@@ -45,6 +45,7 @@ void gaugeClockLoop() {
 }
 
 void gaugeClockStatus(uint8_t value) {
+    if (0 == value) return;
     CRGB color = stateColor(value);
     matrixSetPixelColor(CIRCLE_START + _gauge_clock_hour, color);
 }

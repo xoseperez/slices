@@ -37,6 +37,7 @@ void circleClockLoop() {
 }
 
 void circleStatus(uint8_t value) {
+    if (0 == value) return;
     CRGB color = stateColor(value);
     matrixSetPixelColor(_circle_status_pixel, color);
 }
