@@ -162,6 +162,9 @@ void setup() {
     #if ENABLE_DRIVER_FIBONACCI
         fibonacciClockSetup();
     #endif
+    #if ENABLE_DRIVER_FIBONACCI_MOOD
+        fibonacciMoodSetup();
+    #endif
     #if ENABLE_DRIVER_BINARY
         binaryClockSetup();
     #endif

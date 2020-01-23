@@ -73,44 +73,45 @@
 //------------------------------------------------------------------------------
 
 #ifdef DEVICE_FIBONACCI
-    #define MATRIX_SIZE                 MATRIX_8x8
-    #define ENABLE_DRIVER_FIBONACCI     1
-    #define DEVICE_NAME                 "FIBONACCI"
-#endif
+    #define MATRIX_SIZE                     MATRIX_8x8
+    #define ENABLE_DRIVER_FIBONACCI         1
+    #define ENABLE_DRIVER_FIBONACCI_MOOD    1
+    #define DEVICE_NAME                     "FIBONACCI"
+#endif  
 
-#ifdef DEVICE_WORDCLOCK
-    #define MATRIX_SIZE                 MATRIX_16x16
-    #define ENABLE_DRIVER_WORDCLOCK     1
-    #define DEVICE_NAME                 "WORDCLOCK"
-    #define STATE_NON_STICKY
-#endif
+#ifdef DEVICE_WORDCLOCK 
+    #define MATRIX_SIZE                     MATRIX_16x16
+    #define ENABLE_DRIVER_WORDCLOCK         1
+    #define DEVICE_NAME                     "WORDCLOCK"
+    #define STATE_NON_STICKY    
+#endif  
 
-#ifdef DEVICE_SCROLL_CIRCLE_CLOCK
-    #define MATRIX_SIZE                 MATRIX_16x8
-    #define CIRCLE_SIZE                 60
-    #define ENABLE_DRIVER_SCROLL        1
-    #define ENABLE_DRIVER_CIRCLE        1
-    #define ENABLE_DRIVER_GAUGE         1
-    #define DEVICE_NAME                 "CLOCK"
-    #define STATE_NON_STICKY
-#endif
+#ifdef DEVICE_SCROLL_CIRCLE_CLOCK   
+    #define MATRIX_SIZE                     MATRIX_16x8
+    #define CIRCLE_SIZE                     60
+    #define ENABLE_DRIVER_SCROLL            1
+    #define ENABLE_DRIVER_CIRCLE            1
+    #define ENABLE_DRIVER_GAUGE             1
+    #define DEVICE_NAME                     "CLOCK"
+    #define STATE_NON_STICKY    
+#endif  
 
-#ifdef DEVICE_BIG_CANVAS
-    #define MATRIX_SIZE                 MATRIX_16x16
-    #define ENABLE_DRIVER_BASIC         1
-    #define ENABLE_DRIVER_BINARY        1
-    #define ENABLE_DRIVER_CANVAS        1
-    #define ENABLE_DRIVER_GAME_OF_LIFE  1
-    #define DEVICE_NAME                 "SLICES"
-#endif
+#ifdef DEVICE_BIG_CANVAS    
+    #define MATRIX_SIZE                     MATRIX_16x16
+    #define ENABLE_DRIVER_BASIC             1
+    #define ENABLE_DRIVER_BINARY            1
+    #define ENABLE_DRIVER_CANVAS            1
+    #define ENABLE_DRIVER_GAME_OF_LIFE      1
+    #define DEVICE_NAME                     "SLICES"
+#endif  
 
-#ifdef DEVICE_SMALL_CANVAS
-    #define MATRIX_SIZE                 MATRIX_8x8
-    #define ENABLE_DRIVER_BASIC         1
-    #define ENABLE_DRIVER_BINARY        1
-    #define ENABLE_DRIVER_CANVAS        1
-    #define ENABLE_DRIVER_GAME_OF_LIFE  1
-    #define DEVICE_NAME                 "SLICES"
+#ifdef DEVICE_SMALL_CANVAS  
+    #define MATRIX_SIZE                     MATRIX_8x8
+    #define ENABLE_DRIVER_BASIC             1
+    #define ENABLE_DRIVER_BINARY            1
+    #define ENABLE_DRIVER_CANVAS            1
+    #define ENABLE_DRIVER_GAME_OF_LIFE      1
+    #define DEVICE_NAME                     "SLICES"
 #endif
 
 // Disable all the rest
