@@ -92,6 +92,7 @@
     #define ENABLE_DRIVER_SCROLL            1
     #define ENABLE_DRIVER_CIRCLE            1
     #define ENABLE_DRIVER_GAUGE             1
+    #define ENABLE_DRIVER_BINARY            1
     #define DEVICE_NAME                     "CLOCK"
     #define STATE_NON_STICKY    
 #endif  
