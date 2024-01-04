@@ -459,6 +459,7 @@ void wifiSetup() {
     }
 
     _wifi_hours_left = getSetting("timeEvery", TIME_SYNC_EVERY).toInt();
+    --_wifi_hours_left;
 
 }
 
@@ -478,7 +479,7 @@ void wifiLoop() {
 
     // Check every X hours
     if (_wifi_sync_mode == 1) {
-        if (_wifi_hours_left == 0) {
+        if (_wifi_hours_left < 1) {
             wifiOn(false);
             _wifi_hours_left = getSetting("timeEvery", TIME_SYNC_EVERY).toInt();
         }
