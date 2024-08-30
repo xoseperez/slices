@@ -2,7 +2,7 @@
 
 FIBONACCI CLOCK DRIVER
 
-Copyright (C) 2017-2020 by Xose Pérez <xose dot perez at gmail dot com>
+Copyright (C) 2017-2024 by Xose Pérez <xose dot perez at gmail dot com>
 
 */
 

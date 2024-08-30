@@ -2,7 +2,7 @@
 
 FIBONACCI MOOD DRIVER
 
-Copyright (C) 2020 by Xose Pérez <xose dot perez at gmail dot com>
+Copyright (C) 2024 by Xose Pérez <xose dot perez at gmail dot com>
 
 */
 

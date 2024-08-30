@@ -2,7 +2,7 @@
 
 SETTINGS MODULE
 
-Copyright (C) 2016-2020 by Xose Pérez <xose dot perez at gmail dot com>
+Copyright (C) 2016-2024 by Xose Pérez <xose dot perez at gmail dot com>
 
 */
 

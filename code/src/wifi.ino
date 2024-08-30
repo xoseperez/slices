@@ -2,7 +2,7 @@
 
 WIFI MODULE
 
-Copyright (C) 2016-2020 by Xose Pérez <xose dot perez at gmail dot com>
+Copyright (C) 2016-2024 by Xose Pérez <xose dot perez at gmail dot com>
 
 */
 
@@ -87,7 +87,7 @@ void preOff() {
         wifiOff();
     } else {
         DEBUG_MSG_P(PSTR("[WIFI] Keeping WiFi on since there is a client connected\n"));
-        _wifi_off_ticker.once(WIFI_OFF_AFTER, preOff);
+        if (WIFI_OFF_AFTER>0) _wifi_off_ticker.once(WIFI_OFF_AFTER, preOff);
     }
 }
 
@@ -394,7 +394,7 @@ void wifiSetup() {
             stateSet(STATE_CONNECTED);
             ntpConnect();
             matrixRefresh();
-            _wifi_off_ticker.once(WIFI_OFF_AFTER, preOff);
+            if (WIFI_OFF_AFTER>0) _wifi_off_ticker.once(WIFI_OFF_AFTER, preOff);
         }
 
         if (code == MESSAGE_DISCONNECTED) {
@@ -406,7 +406,7 @@ void wifiSetup() {
         if (code == MESSAGE_ACCESSPOINT_CREATED) {
             stateSet(STATE_AP);
             matrixRefresh();
-            _wifi_off_ticker.once(WIFI_OFF_AFTER, preOff);
+            if (WIFI_OFF_AFTER>0) _wifi_off_ticker.once(WIFI_OFF_AFTER, preOff);
         }
 
         if (code == MESSAGE_ACCESSPOINT_FAILED) {

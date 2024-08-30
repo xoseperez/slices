@@ -2,7 +2,7 @@
 
 STATES MODULE
 
-Copyright (C) 2019-2020 by Xose Pérez <xose dot perez at gmail dot com>
+Copyright (C) 2019-2024 by Xose Pérez <xose dot perez at gmail dot com>
 
 */
 

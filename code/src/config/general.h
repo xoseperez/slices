@@ -15,8 +15,8 @@
 #define USE_PASSWORD            0
 #define SETTINGS_MAX_LIST_COUNT 10
 
-#define WIFI_OFF_AFTER          120         // in seconds
-#define TIME_SYNC_MODE          1           // 0: manual, 1: every, 2: when
+#define WIFI_OFF_AFTER          0           // in seconds, 0 to disable turning it off
+#define TIME_SYNC_MODE          0           // 0: manual, 1: every, 2: when
 #define TIME_SYNC_EVERY         1           // in hours (can be > 24)
 #define TIME_SYNC_WHEN          20          // at 20:00
 
